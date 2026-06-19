@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: razorpay
+  # so if DB_URL is not exist in environment then after : value will get connected
+
+  profiles:
+    active: dev
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/razorpay}
+    username: ${DB_USER:}
+    password: ${DB_PASSWORD:}
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: false
+#    properties:
+#      hibernate:
+#        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+
