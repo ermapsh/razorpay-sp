@@ -3,9 +3,12 @@ package com.ermapsh.razorpay.merchant.entity;
 import com.ermapsh.razorpay.common.enums.BusinessType;
 import com.ermapsh.razorpay.common.enums.MerchantStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -26,22 +29,22 @@ public class Merchant {
     @Enumerated(EnumType.ORDINAL)
     private BusinessType businessType;
 
-    @Column(unique = true, length = 50)
+    @Column(unique = true, length = 50, nullable = false)
     private String businessName;
 
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(unique = true, nullable = false, length = 200)
+    @Column(unique = true, length = 200)
     private String websiteURL;
 
-    @Column(unique = true, length = 15, nullable = false)
+    @Column(length = 15)
     private String contactNumber;
 
-    @Column(unique = true, length = 20)
+    @Column(length = 20)
     private String panId;
 
-    @Column(unique = true, length = 20)
+    @Column(length = 20)
     private String gstId;
 
     @Column(length = 200, nullable = false)
@@ -52,7 +55,7 @@ public class Merchant {
     @Column(unique = true)
     private String settlementBankAccount;
 
-    @Column(unique = false)
+    @Column
     private String settlementBankIFSC;
 
     @Column(unique = true)
@@ -63,5 +66,4 @@ public class Merchant {
 
     private String createdBy;
     private String updatedBy;
-
 }
