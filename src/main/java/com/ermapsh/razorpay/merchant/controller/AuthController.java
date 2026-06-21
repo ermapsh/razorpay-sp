@@ -6,6 +6,7 @@ import com.ermapsh.razorpay.merchant.dto.response.MerchantSignupResponse;
 import com.ermapsh.razorpay.merchant.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,19 +22,11 @@ public class AuthController {
 
     @PostMapping("signup")
     public ResponseEntity<ApiResponse<MerchantSignupResponse>> signup(@RequestBody @Valid MerchantSignupRequest request) {
-        try {
-            MerchantSignupResponse response = authService.signup(request);
-            return ResponseEntity.status(201).body(
-                    new ApiResponse<>(201, "Merchant created successfully", response, null)
-            );
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(
-                    new ApiResponse<>(400,
-                            "Failed to create merchant",
-                            null,
-                            e)
-            );
-        }
+        MerchantSignupResponse response = authService.signup(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new ApiResponse<>(HttpStatus.CREATED.value(), "Merchant created successfully", response, null)
+        );
+
     }
 
 }

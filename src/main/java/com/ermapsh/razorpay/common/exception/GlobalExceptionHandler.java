@@ -1,4 +1,4 @@
-package com.ermapsh.razorpay.exception;
+package com.ermapsh.razorpay.common.exception;
 
 import com.ermapsh.razorpay.common.enums.ApiResponse;
 import org.springframework.http.HttpStatus;
@@ -13,6 +13,18 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ApiResponse<Object>> handleDuplicateResourceException(DuplicateResourceException ex) {
+        ApiResponse<Object> response = new ApiResponse<>(ex.getErrorCode(), ex.getMessage(), null, null);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(ResourceNotFound.class)
+    public ResponseEntity<ApiResponse<Object>> handleResourceNotFoundException(ResourceNotFound ex) {
+        ApiResponse<Object> response = new ApiResponse<>(ex.getErrorCode(), ex.getMessage(), null, null);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<?>> handleValidation(MethodArgumentNotValidException ex) {
@@ -38,7 +50,6 @@ public class GlobalExceptionHandler {
                 errors
         ));
     }
-
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse<?>> handleEmptyBody(

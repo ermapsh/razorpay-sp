@@ -1,6 +1,7 @@
 package com.ermapsh.razorpay.merchant.service.impl;
 
 import com.ermapsh.razorpay.common.enums.UserRole;
+import com.ermapsh.razorpay.common.exception.DuplicateResourceException;
 import com.ermapsh.razorpay.merchant.dto.request.MerchantSignupRequest;
 import com.ermapsh.razorpay.merchant.dto.response.MerchantSignupResponse;
 import com.ermapsh.razorpay.merchant.entity.AppUser;
@@ -8,9 +9,11 @@ import com.ermapsh.razorpay.merchant.entity.Merchant;
 import com.ermapsh.razorpay.merchant.repository.AppUserRepository;
 import com.ermapsh.razorpay.merchant.repository.MerchantRepository;
 import com.ermapsh.razorpay.merchant.service.AuthService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,10 +26,11 @@ public class AuthServiceImp implements AuthService {
     private final ModelMapper modelMapper;
 
     @Override
+    @Transactional
     public MerchantSignupResponse signup(MerchantSignupRequest request) {
         // Check if the email already exists
         if (merchantRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new DuplicateResourceException("Email already exists "  + request.email());
         }
 
         // Create a new merchant entity and save it to the database
