@@ -4,7 +4,9 @@ import com.ermapsh.razorpay.common.enums.Environment;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -27,7 +29,7 @@ public class ApiKey {
     @JoinColumn(name = "merchant_id", nullable = false)
     private Merchant merchant;
 
-    @Column(nullable = false, length = 50, unique = true)
+    @Column(nullable = false, length = 200, unique = true)
     private String keyId;
 
     @Column(nullable = false, length = 200)
@@ -38,11 +40,16 @@ public class ApiKey {
     private Environment env;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean enabled  = true;
 
+    @CreationTimestamp
     private LocalDateTime createdAt;
+
     private LocalDateTime lastUsedAt;
+
     private LocalDateTime rotatedAt;
+
     private LocalDateTime gracePeriodExpiresAt;
 
 
