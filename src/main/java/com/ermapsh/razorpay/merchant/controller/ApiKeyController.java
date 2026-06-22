@@ -3,13 +3,15 @@ package com.ermapsh.razorpay.merchant.controller;
 import com.ermapsh.razorpay.common.enums.ApiResponse;
 import com.ermapsh.razorpay.merchant.dto.request.CreateApiRequest;
 import com.ermapsh.razorpay.merchant.dto.response.ApiKeyCreateResponse;
-import com.ermapsh.razorpay.merchant.service.impl.ApiKeyServiceImpl;
+import com.ermapsh.razorpay.merchant.dto.response.GetAllApiByMerchant;
+import com.ermapsh.razorpay.merchant.service.ApiKeyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -17,16 +19,26 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ApiKeyController {
 
-    private final ApiKeyServiceImpl apiKeyServiceImpl;
+    private final ApiKeyService apiKeyService;
 
-    @PostMapping()
+    @PostMapping
     public ResponseEntity<ApiResponse<ApiKeyCreateResponse>> createApiKey(@PathVariable UUID merchantId,
                                                                           @Valid @RequestBody CreateApiRequest request
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 new ApiResponse<>(201,
                         "API key created successfully",
-                        apiKeyServiceImpl.create(merchantId, request),
+                        apiKeyService.create(merchantId, request),
+                        null)
+        );
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<GetAllApiByMerchant>>> listByMerchant(@PathVariable UUID merchantId) {
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ApiResponse<>(200,
+                        "API keys fetched successfully",
+                        apiKeyService.listByMerchant(merchantId),
                         null)
         );
     }
