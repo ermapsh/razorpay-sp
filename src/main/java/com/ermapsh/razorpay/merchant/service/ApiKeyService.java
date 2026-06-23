@@ -10,4 +10,6 @@ import java.util.UUID;
 public interface ApiKeyService {
     ApiKeyCreateResponse create(UUID merchantId, CreateApiRequest request);
     List<GetAllApiByMerchant> listByMerchant(UUID merchantId);
+    void revoke(UUID merchantId, UUID keyId);
+    ApiKeyCreateResponse rotateKey(UUID merchantId, UUID keyId);
 }
