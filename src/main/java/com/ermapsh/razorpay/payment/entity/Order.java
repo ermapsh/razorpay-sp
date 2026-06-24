@@ -27,7 +27,7 @@ public class Order {
 
     /* No FK- cross service boundary */
     @Column(nullable = false, name = "merchant_id")
-    private UUID merchant;
+    private UUID merchantId;
 
     @Embedded
     private Money amount;
