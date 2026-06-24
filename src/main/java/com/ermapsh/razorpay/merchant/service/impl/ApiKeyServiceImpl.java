@@ -13,7 +13,8 @@ import com.ermapsh.razorpay.merchant.repository.MerchantRepository;
 import com.ermapsh.razorpay.merchant.service.ApiKeyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,13 +24,13 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 @Transactional(readOnly = true)
 public class ApiKeyServiceImpl implements ApiKeyService {
 
     private final ApiKeyRepository apiKeyRepository;
     private final MerchantRepository merchantRepository;
     private final ApiKeyCreateResponseMapper apiKeyCreateResponseMapper;
+    private static final Logger log = LoggerFactory.getLogger(ApiKeyServiceImpl.class);
 
     @Override
     @Transactional
@@ -45,7 +46,7 @@ public class ApiKeyServiceImpl implements ApiKeyService {
                 merchant(merchant).
                 keyId(keyId).
                 keySecretHash(rawSecret).
-                env(request.environment()).
+                environment(request.environment()).
                 build();
 
         ApiKey savedApiKey = apiKeyRepository.save(apiKey);
@@ -65,12 +66,11 @@ public class ApiKeyServiceImpl implements ApiKeyService {
 //        List<ApiKey> apiKeys = apiKeyRepository.findByMerchant_Id(merchantId);
         List<ApiKey> apiKeys = apiKeyRepository.findByMerchant_IdAndEnabledTrue(merchantId);
 
-
         return apiKeyCreateResponseMapper.toResponseList(apiKeys);
-//            return apiKeys.stream.map(apiKey -> new GetAllApiByMerchant(
+//            return apiKeys.stream().map(apiKey -> new GetAllApiByMerchant(
 //                        apiKey.getId(),
 //                        apiKey.getKeyId(),
-//                        apiKey.getEnv(),
+//                        apiKey.getEnvironment(),
 //                        apiKey.isEnabled(),
 //                        apiKey.getLastUsedAt(),
 //                        apiKey.getCreatedAt()
@@ -108,7 +108,7 @@ public class ApiKeyServiceImpl implements ApiKeyService {
                 apiKey.getId(),
                 apiKey.getKeyId(),
                 apiKey.getKeySecretHash(),
-                apiKey.getEnv()
+                apiKey.getEnvironment()
         );
     }
 }

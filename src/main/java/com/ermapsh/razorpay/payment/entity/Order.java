@@ -1,5 +1,6 @@
 package com.ermapsh.razorpay.payment.entity;
 
+import com.ermapsh.razorpay.common.entity.BaseEntity;
 import com.ermapsh.razorpay.common.entity.Money;
 import com.ermapsh.razorpay.common.enums.OrderStatus;
 import jakarta.persistence.*;
@@ -17,9 +18,11 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "orders")
+@Table(name = "orders", indexes = {
+        @Index(name = "idx_order_id_merchant_id", columnList = "id, merchant_id")
+})
 @Builder
-public class Order {
+public class Order extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

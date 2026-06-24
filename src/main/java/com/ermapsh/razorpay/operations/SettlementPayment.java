@@ -1,6 +1,7 @@
 package com.ermapsh.razorpay.operations;
 
 
+import com.ermapsh.razorpay.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import org.hibernate.annotations.EmbeddedColumnNaming;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class SettlementPayment {
+public class SettlementPayment extends BaseEntity {
 
     @EmbeddedId
     private SettlementPaymentId paymentId;

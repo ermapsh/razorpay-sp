@@ -1,5 +1,6 @@
 package com.ermapsh.razorpay.merchant.entity;
 
+import com.ermapsh.razorpay.common.entity.BaseEntity;
 import com.ermapsh.razorpay.common.enums.Environment;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -12,13 +13,17 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "api_key")
+@Table(name = "api_key",
+        indexes = {
+        @Index(name = "idx_api_key_merchant_env", columnList = "merchant_id, environment, enabled")
+})
 @Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ApiKey {
+
+public class ApiKey extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -40,7 +45,7 @@ public class ApiKey {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
-    private Environment env;
+    private Environment environment;
 
     @Column(nullable = false)
     @Builder.Default

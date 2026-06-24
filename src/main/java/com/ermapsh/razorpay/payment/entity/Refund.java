@@ -1,5 +1,6 @@
 package com.ermapsh.razorpay.payment.entity;
 
+import com.ermapsh.razorpay.common.entity.BaseEntity;
 import com.ermapsh.razorpay.common.entity.Money;
 import com.ermapsh.razorpay.common.enums.RefundStatus;
 import jakarta.persistence.*;
@@ -19,7 +20,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Refund {
+public class Refund extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

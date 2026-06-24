@@ -1,5 +1,6 @@
 package com.ermapsh.razorpay.valut.entity;
 
+import com.ermapsh.razorpay.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,7 +16,7 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class VaultCard {
+public class VaultCard extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -47,6 +48,4 @@ public class VaultCard {
 
     @Column
     private LocalDateTime deletedAt;
-
-
 }

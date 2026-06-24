@@ -11,6 +11,5 @@ import java.util.List;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface ApiKeyCreateResponseMapper {
     ApiKeyCreateResponse toResponse(ApiKey apiKey);
-
     List<GetAllApiByMerchant> toResponseList(List<ApiKey> apiKeys);
 }

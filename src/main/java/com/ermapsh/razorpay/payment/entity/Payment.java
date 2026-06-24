@@ -1,5 +1,6 @@
 package com.ermapsh.razorpay.payment.entity;
 
+import com.ermapsh.razorpay.common.entity.BaseEntity;
 import com.ermapsh.razorpay.common.entity.Money;
 import com.ermapsh.razorpay.common.enums.PaymentMethod;
 import com.ermapsh.razorpay.common.enums.PaymentStatus;
@@ -20,8 +21,13 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "payments")
-public class Payment {
+@Table(name = "payments",
+    indexes = {
+        @Index(name = "idx_payment_id_order_id", columnList = "id, order_id"),
+        @Index(name = "idx_payment_id_order_id_merchant_id", columnList = "id, order_id, merchant_id"),
+    }
+)
+public class Payment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

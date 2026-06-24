@@ -1,11 +1,9 @@
 package com.ermapsh.razorpay.merchant.entity;
 
 
+import com.ermapsh.razorpay.common.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.UUID;
 
@@ -14,7 +12,13 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MerchantConfig {
+@Table(
+        indexes = {
+                @Index(name = "idx_webhook_merchant_id", columnList = "merchant_id, enabled")
+        }
+)
+@Builder
+public class MerchantWebhookConfig  extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -33,6 +37,6 @@ public class MerchantConfig {
     private String eventTypeFilter;
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean enabled = true;
-
 }

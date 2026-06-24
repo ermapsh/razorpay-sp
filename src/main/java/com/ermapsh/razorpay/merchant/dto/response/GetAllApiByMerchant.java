@@ -11,6 +11,6 @@ public record GetAllApiByMerchant(
     Environment environment,
     boolean enabled,
     LocalDateTime lastUsedAt,
-    LocalDateTime createAt
+    LocalDateTime createdAt
 ) {
 }

@@ -1,13 +1,11 @@
 package com.ermapsh.razorpay.payment.entity;
 
+import com.ermapsh.razorpay.common.entity.BaseEntity;
 import com.ermapsh.razorpay.common.enums.PaymentActor;
 import com.ermapsh.razorpay.common.enums.PaymentEvent;
 import com.ermapsh.razorpay.common.enums.PaymentStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -17,7 +15,13 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentTransitionLog {
+@Builder
+@Table(
+        indexes = {
+                @Index(name = "idx_payment_transition_log_payment_id", columnList = "id, payment_id")
+        }
+)
+public class PaymentTransitionLog extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
