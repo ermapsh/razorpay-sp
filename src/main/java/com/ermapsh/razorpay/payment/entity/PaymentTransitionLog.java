@@ -24,11 +24,11 @@ public class PaymentTransitionLog {
 
     @OneToOne(fetch = FetchType.LAZY) // optional
     @JoinColumn( nullable = false, name = "order_id")
-    private OrderRecord orderRecord;
+    private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn( nullable = false, name = "payment_id")
-    private PaymentRecord paymentRecord;
+    private Payment payment;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

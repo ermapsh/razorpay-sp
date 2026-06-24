@@ -19,7 +19,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RefundRecord {
+public class Refund {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -27,7 +27,7 @@ public class RefundRecord {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(nullable = false, name = "payment_id")
-    private PaymentRecord paymentRecord;
+    private Payment payment;
 
     @Column(nullable = false)
     private UUID merchantId;
