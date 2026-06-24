@@ -9,14 +9,12 @@ import com.ermapsh.razorpay.payment.dto.response.CreateOrderResponse;
 import com.ermapsh.razorpay.payment.dto.response.PaymentResponse;
 import com.ermapsh.razorpay.payment.entity.Order;
 import com.ermapsh.razorpay.payment.entity.Payment;
+import com.ermapsh.razorpay.payment.mapper.CreateOrderResponseMapper;
 import com.ermapsh.razorpay.payment.mapper.PaymentMapper;
 import com.ermapsh.razorpay.payment.repository.OrderRepository;
 import com.ermapsh.razorpay.payment.repository.PaymentRepository;
 import com.ermapsh.razorpay.payment.service.OrderService;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,9 +33,8 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
-    private final ModelMapper modelMapper;
     private final PaymentMapper paymentMapper;
-
+    private final CreateOrderResponseMapper createOrderResponseMapper;
 
     @Override
     @Transactional
@@ -63,17 +60,8 @@ public class OrderServiceImpl implements OrderService {
 
         // TODO: publish kafka event about order creation
 
-        return new CreateOrderResponse(
-                savedOrder.getId(),
-                savedOrder.getMerchantId(),
-                savedOrder.getReceipt(),
-                savedOrder.getAmount(),
-                savedOrder.getStatus(),
-                savedOrder.getAttempts(),
-                savedOrder.getNotes(),
-                savedOrder.getExpiresAt(),
-                null
-        );
+        /*return new CreateOrderResponse(savedOrder.getId(),savedOrder.getMerchantId(),savedOrder.getReceipt(),savedOrder.getAmount(),savedOrder.getStatus(),savedOrder.getAttempts(),savedOrder.getNotes(),savedOrder.getExpiresAt(),null);*/
+        return createOrderResponseMapper.toResponse(savedOrder);
     }
 
     private Order getOrder(UUID orderId, UUID merchantId){
@@ -84,8 +72,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public CreateOrderResponse getOrderById(UUID merchantId, UUID orderId) {
         Order order = getOrder(orderId, merchantId);
-        System.out.println("order="+ order);
-        return modelMapper.map(order, CreateOrderResponse.class);
+//        return modelMapper.map(order, CreateOrderResponse.class);
+        return createOrderResponseMapper.toResponse(order);
     }
 
     @Override
@@ -98,7 +86,8 @@ public class OrderServiceImpl implements OrderService {
 
         order.setStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
-        return modelMapper.map(order, CreateOrderResponse.class);
+//        return modelMapper.map(order, CreateOrderResponse.class);
+        return createOrderResponseMapper.toResponse(order);
     }
 
     @Override

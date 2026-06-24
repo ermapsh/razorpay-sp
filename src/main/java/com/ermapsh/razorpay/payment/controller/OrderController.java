@@ -54,7 +54,7 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK).body(
                 new ApiResponse(
                         HttpStatus.OK.value(),
-                        "order delete successfully",
+                        "order cancel successfully",
                         orderService.cancel(merchantId, orderId),
                         null
                 )

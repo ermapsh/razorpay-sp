@@ -22,5 +22,5 @@ public class CreateOrderResponse{
     Integer attempts;
     Map<String, Object> notes;
     LocalDateTime expiresAt;
-    LocalDateTime createdA;
+    LocalDateTime createdAt;
 }

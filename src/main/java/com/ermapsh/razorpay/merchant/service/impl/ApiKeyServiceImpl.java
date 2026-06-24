@@ -7,13 +7,13 @@ import com.ermapsh.razorpay.merchant.dto.response.ApiKeyCreateResponse;
 import com.ermapsh.razorpay.merchant.dto.response.GetAllApiByMerchant;
 import com.ermapsh.razorpay.merchant.entity.ApiKey;
 import com.ermapsh.razorpay.merchant.entity.Merchant;
+import com.ermapsh.razorpay.merchant.mapper.ApiKeyCreateResponseMapper;
 import com.ermapsh.razorpay.merchant.repository.ApiKeyRepository;
 import com.ermapsh.razorpay.merchant.repository.MerchantRepository;
 import com.ermapsh.razorpay.merchant.service.ApiKeyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,8 +28,8 @@ import java.util.UUID;
 public class ApiKeyServiceImpl implements ApiKeyService {
 
     private final ApiKeyRepository apiKeyRepository;
-    private final ModelMapper modelMapper;
     private final MerchantRepository merchantRepository;
+    private final ApiKeyCreateResponseMapper apiKeyCreateResponseMapper;
 
     @Override
     @Transactional
@@ -65,16 +65,17 @@ public class ApiKeyServiceImpl implements ApiKeyService {
 //        List<ApiKey> apiKeys = apiKeyRepository.findByMerchant_Id(merchantId);
         List<ApiKey> apiKeys = apiKeyRepository.findByMerchant_IdAndEnabledTrue(merchantId);
 
-        return apiKeys.stream()
-                .map(apiKey -> new GetAllApiByMerchant(
-                        apiKey.getId(),
-                        apiKey.getKeyId(),
-                        apiKey.getEnv(),
-                        apiKey.isEnabled(),
-                        apiKey.getLastUsedAt(),
-                        apiKey.getCreatedAt()
-                ))
-                .toList();
+
+        return apiKeyCreateResponseMapper.toResponseList(apiKeys);
+//            return apiKeys.stream.map(apiKey -> new GetAllApiByMerchant(
+//                        apiKey.getId(),
+//                        apiKey.getKeyId(),
+//                        apiKey.getEnv(),
+//                        apiKey.isEnabled(),
+//                        apiKey.getLastUsedAt(),
+//                        apiKey.getCreatedAt()
+//                ))
+//                .toList();
     }
 
 
