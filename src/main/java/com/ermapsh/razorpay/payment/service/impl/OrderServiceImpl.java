@@ -9,6 +9,7 @@ import com.ermapsh.razorpay.payment.dto.response.CreateOrderResponse;
 import com.ermapsh.razorpay.payment.dto.response.PaymentResponse;
 import com.ermapsh.razorpay.payment.entity.Order;
 import com.ermapsh.razorpay.payment.entity.Payment;
+import com.ermapsh.razorpay.payment.mapper.PaymentMapper;
 import com.ermapsh.razorpay.payment.repository.OrderRepository;
 import com.ermapsh.razorpay.payment.repository.PaymentRepository;
 import com.ermapsh.razorpay.payment.service.OrderService;
@@ -35,6 +36,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
     private final ModelMapper modelMapper;
+    private final PaymentMapper paymentMapper;
 
 
     @Override
@@ -103,23 +105,27 @@ public class OrderServiceImpl implements OrderService {
     public List<PaymentResponse> listPayments(UUID merchantId, UUID orderId) {
         Order order = getOrder(orderId, merchantId);
         List<Payment> list = paymentRepository.findByOrder(order);
-        return list.stream().map((item)-> new PaymentResponse(
-                item.getId(),
-                item.getOrder().getId(),
-                item.getMerchantId(),
-                item.getIdempotency(),
-                item.getBankReference(),
-                item.getMoney(),
-                item.getPaymentMethod(),
-                item.getMethodDetails(),
-                item.getPaymentStatus(),
-                item.getErrorCode(),
-                item.getErrorDescription(),
-                item.getAuthorizedAt(),
-                item.getCapturedAt(),
-                item.getFailedAt(),
-                item.getRefundedAt()
-        )).toList();
+        return paymentMapper.toReponseList(list);
+//        return list.stream().map((item)->paymentMapper.toResponse(item)).toList();
+
+//                new PaymentResponse(
+//                item.getId(),
+//                item.getOrder().getId(),
+//                item.getMerchantId(),
+//                item.getIdempotency(),
+//                item.getBankReference(),
+//                item.getMoney(),
+//                item.getPaymentMethod(),
+//                item.getMethodDetails(),
+//                item.getPaymentStatus(),
+//                item.getErrorCode(),
+//                item.getErrorDescription(),
+//                item.getAuthorizedAt(),
+//                item.getCapturedAt(),
+//                item.getFailedAt(),
+//                item.getRefundedAt()
+//        )
+
     }
 
 }
