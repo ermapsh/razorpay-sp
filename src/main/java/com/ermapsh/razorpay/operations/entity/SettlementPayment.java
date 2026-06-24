@@ -1,4 +1,4 @@
-package com.ermapsh.razorpay.operations;
+package com.ermapsh.razorpay.operations.entity;
 
 
 import com.ermapsh.razorpay.common.entity.BaseEntity;
@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.EmbeddedColumnNaming;
 
 @Entity
 @Table

@@ -1,4 +1,4 @@
-package com.ermapsh.razorpay.operations;
+package com.ermapsh.razorpay.operations.entity;
 
 import jakarta.persistence.Embeddable;
 import lombok.*;
