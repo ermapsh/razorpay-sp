@@ -27,3 +27,6 @@ logging:
     org.springframework.boot.actuate: DEBUG
     org.springframework.web: DEBUG
     org.springframework.validation: DEBUG
+
+merchant:
+  id: 2d749734-bfd8-4720-94b6-2ea2bbc30512

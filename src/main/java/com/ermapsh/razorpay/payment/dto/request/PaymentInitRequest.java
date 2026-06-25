@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public record PaymentInitRequest(
+
         @NotNull(message = "Order is required")
         UUID orderId,
 

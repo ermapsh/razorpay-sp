@@ -6,7 +6,10 @@ import com.ermapsh.razorpay.payment.dto.response.CreateOrderResponse;
 import com.ermapsh.razorpay.payment.dto.response.PaymentResponse;
 import com.ermapsh.razorpay.payment.service.OrderService;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +24,9 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    private UUID merchantId = UUID.fromString("de168599-e512-4493-b119-8151fdcbac69"); // TODO: replace it with MerchantContext
+    @Value("${merchant.id}")
+    private UUID merchantId;
+
 
     @PostMapping("")
     public ResponseEntity<ApiResponse<CreateOrderResponse>> createOrder(@RequestBody @Valid CreateOrderRequest request){

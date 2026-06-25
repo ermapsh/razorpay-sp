@@ -5,10 +5,7 @@ import com.ermapsh.razorpay.common.entity.Money;
 import com.ermapsh.razorpay.common.enums.PaymentMethod;
 import com.ermapsh.razorpay.common.enums.PaymentStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -27,6 +24,7 @@ import java.util.UUID;
         @Index(name = "idx_payment_id_order_id_merchant_id", columnList = "id, order_id, merchant_id"),
     }
 )
+@Builder
 public class Payment extends BaseEntity {
 
     @Id
