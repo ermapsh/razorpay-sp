@@ -2,6 +2,7 @@ package com.ermapsh.razorpay.payment.service;
 
 import com.ermapsh.razorpay.payment.dto.request.PaymentInitRequest;
 import com.ermapsh.razorpay.payment.dto.response.PaymentResponse;
+import com.ermapsh.razorpay.payment.gateway.dto.PaymentResult;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

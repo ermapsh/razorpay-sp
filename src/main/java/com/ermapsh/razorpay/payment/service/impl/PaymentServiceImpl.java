@@ -1,7 +1,6 @@
 package com.ermapsh.razorpay.payment.service.impl;
 
 import com.ermapsh.razorpay.common.enums.OrderStatus;
-import com.ermapsh.razorpay.common.enums.PaymentMethod;
 import com.ermapsh.razorpay.common.enums.PaymentStatus;
 import com.ermapsh.razorpay.common.exception.ResourceNotFoundException;
 import com.ermapsh.razorpay.payment.dto.request.PaymentInitRequest;
@@ -10,6 +9,8 @@ import com.ermapsh.razorpay.payment.entity.Order;
 import com.ermapsh.razorpay.payment.entity.Payment;
 import com.ermapsh.razorpay.payment.gateway.PaymentGatewayRouter;
 import com.ermapsh.razorpay.payment.gateway.dto.PaymentRequest;
+import com.ermapsh.razorpay.payment.gateway.dto.PaymentResult;
+import com.ermapsh.razorpay.payment.mapper.PaymentMapper;
 import com.ermapsh.razorpay.payment.repository.OrderRepository;
 import com.ermapsh.razorpay.payment.repository.PaymentRepository;
 import com.ermapsh.razorpay.payment.service.PaymentService;
@@ -29,12 +30,11 @@ public class PaymentServiceImpl implements PaymentService {
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
     private final PaymentGatewayRouter paymentGatewayRouter;
-
+    private final PaymentMapper paymentMapper;
 
     @Override
     @Transactional
     public PaymentResponse initiate(UUID merchantId, PaymentInitRequest request) {
-        PaymentMethod paymentMethod = request.method();
         /*
         if(paymentMethod == PaymentMethod.CARD){
 
@@ -76,7 +76,6 @@ public class PaymentServiceImpl implements PaymentService {
                 .build();
 
         Payment savedPayment = paymentRepository.save(payment);
-
         PaymentRequest paymentRequest = new PaymentRequest(
                 savedPayment.getId(),
                 request.orderId(),
@@ -86,7 +85,19 @@ public class PaymentServiceImpl implements PaymentService {
                 savedPayment.getMethodDetails()
         );
 
-        paymentGatewayRouter.initiate(paymentRequest);
-        return null;
+        PaymentResult result = paymentGatewayRouter.initiate(paymentRequest); // it will choose the payment adapter -> and adapter will choose payment processor
+        switch (result) {
+            case PaymentResult.Pending(String registrationRef) -> payment.setProcessorReference(registrationRef);
+            case PaymentResult.Failure(String errorCode, String errorDescription) -> {
+                payment.setPaymentStatus(PaymentStatus.FAILED);
+                payment.setErrorCode(errorCode);
+                payment.setErrorDescription(errorDescription);
+            }
+        }
+
+        orderRepository.save(order);
+        payment = paymentRepository.save(payment);
+
+        return paymentMapper.toResponse(payment);
     }
 }
