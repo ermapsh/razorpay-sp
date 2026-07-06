@@ -5,7 +5,7 @@ import com.ermapsh.razorpay.payment.processor.dto.PaymentProcessorRequest;
 import com.ermapsh.razorpay.payment.processor.dto.PaymentProcessorResponse;
 
 // processor call here network banking util
-public class NetbankingPaymentProcessor implements PaymentProcessor {
+public class NetBankingPaymentProcessor implements PaymentProcessor {
 
     @Override
     public PaymentProcessorResponse charge(PaymentProcessorRequest request) {

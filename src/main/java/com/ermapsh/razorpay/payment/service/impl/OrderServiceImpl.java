@@ -28,7 +28,7 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class OrderServiceImpl implements OrderService {
 
-    @Value("${payment.order.default-order-expiry-minutes}")
+    @Value("${PAYMENT.ORDER.DEFAULT_ORDER_EXPIRY_MINUTES}")
     private int defaultOrderExpiryMinutes;
 
     private final OrderRepository orderRepository;
@@ -94,7 +94,7 @@ public class OrderServiceImpl implements OrderService {
     public List<PaymentResponse> listPayments(UUID merchantId, UUID orderId) {
         Order order = getOrder(orderId, merchantId);
         List<Payment> list = paymentRepository.findByOrder(order);
-        return paymentMapper.toReponseList(list);
+        return paymentMapper.toResponseList(list);
 //        return list.stream().map((item)->paymentMapper.toResponse(item)).toList();
 
 //                new PaymentResponse(
