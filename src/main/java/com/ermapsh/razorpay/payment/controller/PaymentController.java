@@ -22,7 +22,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @Value("${merchant.id}")
-    private UUID merchantId;
+    private UUID merchantId; // will come through auth middleware
 
     @PostMapping("")
     public ResponseEntity<?> initiate(@Valid @RequestBody PaymentInitRequest request){

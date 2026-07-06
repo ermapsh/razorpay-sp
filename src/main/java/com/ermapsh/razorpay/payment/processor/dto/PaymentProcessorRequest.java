@@ -5,8 +5,14 @@ import com.ermapsh.razorpay.common.enums.PaymentMethod;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.Map;
+import java.util.UUID;
 
-public record PaymentProcessorRequest (
+public record PaymentProcessorRequest(
+
+        UUID processingId,
+
+        @NotNull
+        UUID paymentId,
 
         @NotNull
         PaymentMethod paymentMethod,
@@ -20,5 +26,15 @@ public record PaymentProcessorRequest (
 
         @NotNull
         Map<String, Object> methodDetails
-){
+) {
+
+    public static PaymentProcessorRequest card(Money money, UUID paymentId, String pan, String expiry, Map<String, Object> methodDetails) {
+        return new PaymentProcessorRequest(UUID.randomUUID(), paymentId, PaymentMethod.CARD, money, pan, expiry, methodDetails);
+    }
+
+
+    public static PaymentProcessorRequest nonCard(UUID paymentId, PaymentMethod paymentMethod, Money money, Map<String, Object> methodDetails) {
+        return new PaymentProcessorRequest(UUID.randomUUID(), paymentId, paymentMethod, money, null, null, methodDetails);
+    }
+
 }

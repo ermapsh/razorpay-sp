@@ -7,17 +7,19 @@ import com.ermapsh.razorpay.payment.dto.request.PaymentInitRequest;
 import com.ermapsh.razorpay.payment.dto.response.PaymentResponse;
 import com.ermapsh.razorpay.payment.entity.Order;
 import com.ermapsh.razorpay.payment.entity.Payment;
-import com.ermapsh.razorpay.payment.gateway.PaymentGatewayRouter;
+import com.ermapsh.razorpay.payment.gateway.PaymentAdapterGatewayRouter;
 import com.ermapsh.razorpay.payment.gateway.dto.PaymentRequest;
 import com.ermapsh.razorpay.payment.gateway.dto.PaymentResult;
 import com.ermapsh.razorpay.payment.mapper.PaymentMapper;
 import com.ermapsh.razorpay.payment.repository.OrderRepository;
 import com.ermapsh.razorpay.payment.repository.PaymentRepository;
 import com.ermapsh.razorpay.payment.service.PaymentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.UUID;
 
@@ -29,12 +31,12 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
-    private final PaymentGatewayRouter paymentGatewayRouter;
+    private final PaymentAdapterGatewayRouter paymentAdapterGatewayRouter;
     private final PaymentMapper paymentMapper;
 
     @Override
     @Transactional
-    public PaymentResponse initiate(UUID merchantId, PaymentInitRequest request) {
+    public PaymentResponse initiate(@RequestHeader("merchantId") UUID merchantId, @Valid PaymentInitRequest request) {
         /*
         if(paymentMethod == PaymentMethod.CARD){
 
@@ -55,6 +57,7 @@ public class PaymentServiceImpl implements PaymentService {
         */
 
 
+        log.info("in PaymentServiceImpl {}", request.method());
         Order order = orderRepository.findByIdAndMerchantId(request.orderId(), merchantId).orElseThrow(()-> {
             throw new ResourceNotFoundException("Order is Invalid");
         });
@@ -76,6 +79,8 @@ public class PaymentServiceImpl implements PaymentService {
                 .build();
 
         Payment savedPayment = paymentRepository.save(payment);
+        log.warn("savedPayment {}", savedPayment.getId());
+
         PaymentRequest paymentRequest = new PaymentRequest(
                 savedPayment.getId(),
                 request.orderId(),
@@ -85,7 +90,10 @@ public class PaymentServiceImpl implements PaymentService {
                 savedPayment.getMethodDetails()
         );
 
-        PaymentResult result = paymentGatewayRouter.initiate(paymentRequest); // it will choose the payment adapter -> and adapter will choose payment processor
+        PaymentResult result = paymentAdapterGatewayRouter.initiate(paymentRequest); // it will choose the payment adapter -> and adapter will choose payment processor
+        if(result == null){
+            throw new IllegalArgumentException("Payment Adapter + Payment Processor Issue");
+        }
         switch (result) {
             case PaymentResult.Pending(String registrationRef) -> payment.setProcessorReference(registrationRef);
             case PaymentResult.Failure(String errorCode, String errorDescription) -> {

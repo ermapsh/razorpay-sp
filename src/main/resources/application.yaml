@@ -24,9 +24,11 @@ management:
 
 logging:
   level:
-    org.springframework.boot.actuate: DEBUG
+    root: INFO
     org.springframework.web: DEBUG
     org.springframework.validation: DEBUG
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
+    com.ermapsh: DEBUG    # Replace with your base package
 
 merchant:
-  id: 2d749734-bfd8-4720-94b6-2ea2bbc30512
+  id: 9472c030-caf9-46e5-b5f4-79a8482a937a

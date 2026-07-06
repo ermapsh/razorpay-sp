@@ -7,12 +7,13 @@ import com.ermapsh.razorpay.payment.gateway.adapter.NetBankingAdapter;
 import com.ermapsh.razorpay.payment.gateway.adapter.UpiPaymentAdapter;
 import com.ermapsh.razorpay.payment.gateway.adapter.WalletPaymentAdapter;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
-@Component
+@Configuration
 public class PaymentAdapterConfig {
 
     @Bean
