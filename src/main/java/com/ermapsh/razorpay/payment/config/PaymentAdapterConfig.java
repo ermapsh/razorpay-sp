@@ -6,6 +6,7 @@ import com.ermapsh.razorpay.payment.gateway.adapter.CardPaymentAdapter;
 import com.ermapsh.razorpay.payment.gateway.adapter.NetBankingAdapter;
 import com.ermapsh.razorpay.payment.gateway.adapter.UpiPaymentAdapter;
 import com.ermapsh.razorpay.payment.gateway.adapter.WalletPaymentAdapter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
@@ -13,16 +14,22 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
+@RequiredArgsConstructor
 @Configuration
 public class PaymentAdapterConfig {
+
+    private final NetBankingAdapter netBankingAdapter;
+    private final CardPaymentAdapter cardPaymentAdapter;
+    private final UpiPaymentAdapter upiPaymentAdapter;
+    private final WalletPaymentAdapter walletPaymentAdapter;
 
     @Bean
     Map<PaymentMethod, PaymentAdapter> paymentAdapterMap(){
         return Map.of(
-                PaymentMethod.CARD, new CardPaymentAdapter(),
-                PaymentMethod.UPI, new UpiPaymentAdapter(),
-                PaymentMethod.NET_BANKING, new NetBankingAdapter(),
-                PaymentMethod.WALLET, new WalletPaymentAdapter()
+                PaymentMethod.CARD,cardPaymentAdapter,
+                PaymentMethod.UPI, upiPaymentAdapter,
+                PaymentMethod.NET_BANKING, netBankingAdapter,
+                PaymentMethod.WALLET, walletPaymentAdapter
         );
     }
 

@@ -26,22 +26,28 @@ public class NetBankingAdapter implements PaymentAdapter {
     public PaymentResult initiate(PaymentRequest request) {
         log.info("initiate Payment with NetBanking PaymentProcessor, paymentId: {}", request.paymentId());
 
-        PaymentProcessorRequest paymentProcessorRequest = PaymentProcessorRequest.nonCard(
-                request.paymentId(),
-                PaymentMethod.NET_BANKING,
-                request.amount(),
-                request.methodDetails()
-        );
+        try {
+            PaymentProcessorRequest paymentProcessorRequest = PaymentProcessorRequest.nonCard(
+                    request.paymentId(),
+                    PaymentMethod.NET_BANKING,
+                    request.amount(),
+                    request.methodDetails()
+            );
 
-        PaymentProcessorResponse paymentProcessorResponse = paymentProcessorRouter.charge(paymentProcessorRequest);
+            PaymentProcessorResponse paymentProcessorResponse = paymentProcessorRouter.charge(paymentProcessorRequest);
 
-        return switch (paymentProcessorResponse){
+            return switch (paymentProcessorResponse) {
 
-            case PaymentProcessorResponse.Pending pending -> new PaymentResult.Pending(pending.processorRef());
+                case PaymentProcessorResponse.Pending pending -> new PaymentResult.Pending(pending.processorRef());
 
-            case PaymentProcessorResponse.Success success -> new PaymentResult.Success(success.bankReference());
+                case PaymentProcessorResponse.Success success -> new PaymentResult.Success(success.bankReference());
 
-            case PaymentProcessorResponse.Failure failure -> new PaymentResult.Failure(failure.errorCode(), failure.errorDescription());
-        };
+                case PaymentProcessorResponse.Failure failure ->
+                        new PaymentResult.Failure(failure.errorCode(), failure.errorDescription());
+            };
+        } catch (Exception e) {
+            log.error("Net Banking payment failed :{}", request.paymentId());
+            return new PaymentResult.Failure("NET_BANKING_FAILED", e.getMessage());
+        }
     }
 }
