@@ -28,7 +28,7 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class OrderServiceImpl implements OrderService {
 
-    @Value("${PAYMENT.ORDER.DEFAULT_ORDER_EXPIRY_MINUTES}")
+    @Value("${payment.order.default_order_expiry_minutes}")
     private int defaultOrderExpiryMinutes;
 
     private final OrderRepository orderRepository;

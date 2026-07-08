@@ -91,9 +91,6 @@ public class PaymentServiceImpl implements PaymentService {
         );
 
         PaymentResult result = paymentAdapterGatewayRouter.initiate(paymentRequest); // it will choose the payment adapter -> and adapter will choose payment processor
-        if(result == null){
-            throw new IllegalArgumentException("Payment Adapter + Payment Processor Issue");
-        }
         switch (result) {
             case PaymentResult.Pending(String registrationRef) -> payment.setProcessorReference(registrationRef);
             case PaymentResult.Failure(String errorCode, String errorDescription) -> {
@@ -101,6 +98,7 @@ public class PaymentServiceImpl implements PaymentService {
                 payment.setErrorCode(errorCode);
                 payment.setErrorDescription(errorDescription);
             }
+            default -> throw new IllegalStateException("Unexpected value: " + result);
         }
 
         orderRepository.save(order);
