@@ -12,9 +12,9 @@ spring:
       ddl-auto: update
     show-sql: true
 
-server:
-  servlet:
-    context-path: /api
+#server:
+#  servlet:
+#    context-path: /api
 
 management:
   endpoints:
