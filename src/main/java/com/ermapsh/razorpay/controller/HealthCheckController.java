@@ -6,9 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
-
-
 @RestController
 public class HealthCheckController {
 
@@ -18,7 +15,6 @@ public class HealthCheckController {
                 new ApiResponse(
                         HttpStatus.OK.value(),
                         "Live",
-//                        LocalDateTime.now(),
                         null,
                         null
                 )
