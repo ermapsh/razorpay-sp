@@ -7,7 +7,7 @@ public sealed interface PaymentProcessorResponse permits
 
     record Pending(String processorRef) implements PaymentProcessorResponse{}
 
-    record Success(String bankReference)implements PaymentProcessorResponse{}
+    record Success(String processorRef, String bankReference)implements PaymentProcessorResponse{}
 
     record Failure(String errorCode, String errorDescription)implements PaymentProcessorResponse{}
 }

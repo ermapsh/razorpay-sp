@@ -1,6 +1,6 @@
 package com.ermapsh.razorpay.merchant.controller;
 
-import com.ermapsh.razorpay.common.enums.ApiResponse;
+import com.ermapsh.razorpay.common.dto.ApiResponse;
 import com.ermapsh.razorpay.merchant.dto.request.CreateApiRequest;
 import com.ermapsh.razorpay.merchant.dto.response.ApiKeyCreateResponse;
 import com.ermapsh.razorpay.merchant.dto.response.GetAllApiByMerchant;
@@ -22,46 +22,37 @@ public class ApiKeyController {
     private final ApiKeyService apiKeyService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<ApiKeyCreateResponse>> createApiKey(@PathVariable UUID merchantId,
-                                                                          @Valid @RequestBody CreateApiRequest request
-    ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                new ApiResponse<>(201,
-                        "API key created successfully",
-                        apiKeyService.create(merchantId, request),
-                        null)
+    public ResponseEntity<ApiResponse<ApiKeyCreateResponse>> createApiKey(
+            @PathVariable UUID merchantId,
+            @Valid @RequestBody CreateApiRequest request) {
+        return ApiResponse.created(
+                "API key created successfully",
+                apiKeyService.create(merchantId, request)
         );
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<GetAllApiByMerchant>>> listByMerchant(@PathVariable UUID merchantId) {
-        return ResponseEntity.status(HttpStatus.OK).body(
-                new ApiResponse<>(200,
-                        "API keys fetched successfully",
-                        apiKeyService.listByMerchant(merchantId),
-                        null)
+        return ApiResponse.ok(
+                "API keys fetched successfully",
+                apiKeyService.listByMerchant(merchantId)
         );
     }
 
     @DeleteMapping("/{keyId}")
-    public ResponseEntity<ApiResponse<?>> revoke(@PathVariable UUID merchantId, @PathVariable UUID keyId){
+    public ResponseEntity<ApiResponse<Void>> revoke(@PathVariable UUID merchantId, @PathVariable UUID keyId) {
         apiKeyService.revoke(merchantId, keyId);
-        return ResponseEntity.status(HttpStatus.OK).body(
-                new ApiResponse<>(200,
-                        "API key revoke successfully",
-                        null,
-                        null)
+        return ApiResponse.ok(
+                "API key revoke successfully",
+                null
         );
     }
 
     @PostMapping("/{keyId}/rotate")
-    public ResponseEntity<ApiResponse<?>> rotateKey(@PathVariable UUID merchantId, @PathVariable UUID keyId){
-
-        return ResponseEntity.status(HttpStatus.OK).body(
-                new ApiResponse<>(200,
-                        "API key rotated successfully",
-                        apiKeyService.rotateKey(merchantId, keyId),
-                        null)
+    public ResponseEntity<ApiResponse<ApiKeyCreateResponse>> rotateKey(@PathVariable UUID merchantId, @PathVariable UUID keyId) {
+        return ApiResponse.ok(
+                "API key rotated successfully",
+                apiKeyService.rotateKey(merchantId, keyId)
         );
     }
 

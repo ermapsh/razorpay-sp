@@ -19,10 +19,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "payments",
-    indexes = {
-        @Index(name = "idx_payment_id_order_id", columnList = "id, order_id"),
-        @Index(name = "idx_payment_id_order_id_merchant_id", columnList = "id, order_id, merchant_id"),
-    }
+        indexes = {
+                @Index(name = "idx_payment_id_order_id", columnList = "id, order_id"),
+                @Index(name = "idx_payment_id_order_id_merchant_id", columnList = "id, order_id, merchant_id"),
+        }
 )
 @Builder
 public class Payment extends BaseEntity {
@@ -38,8 +38,9 @@ public class Payment extends BaseEntity {
     @Column(nullable = false)
     private UUID merchantId;
 
-    @Column(nullable = false, length = 100)
-    private String idempotency;
+    @Column(length = 100)
+    @Builder.Default
+    private String idempotency = UUID.randomUUID().toString();
 
     @Column(length = 100)
     private String bankReference;

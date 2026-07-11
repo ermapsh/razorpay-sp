@@ -98,12 +98,18 @@ public class PaymentServiceImpl implements PaymentService {
                 payment.setErrorCode(errorCode);
                 payment.setErrorDescription(errorDescription);
             }
+            case PaymentResult.Success(String bankReference) -> {
+
+            }
             default -> throw new IllegalStateException("Unexpected value: " + result);
         }
 
         orderRepository.save(order);
-        payment = paymentRepository.save(payment);
+        return paymentMapper.toResponse(paymentRepository.save(payment));
+    }
 
-        return paymentMapper.toResponse(payment);
+    @Override
+    public PaymentResponse capture(UUID merchantId, UUID paymentId) {
+        return null;
     }
 }

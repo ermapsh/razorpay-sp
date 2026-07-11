@@ -1,6 +1,6 @@
 package com.ermapsh.razorpay.merchant.controller;
 
-import com.ermapsh.razorpay.common.enums.ApiResponse;
+import com.ermapsh.razorpay.common.dto.ApiResponse;
 import com.ermapsh.razorpay.merchant.dto.request.MerchantSignupRequest;
 import com.ermapsh.razorpay.merchant.dto.response.MerchantSignupResponse;
 import com.ermapsh.razorpay.merchant.service.AuthService;
@@ -23,10 +23,10 @@ public class AuthController {
     @PostMapping("signup")
     public ResponseEntity<ApiResponse<MerchantSignupResponse>> signup(@RequestBody @Valid MerchantSignupRequest request) {
         MerchantSignupResponse response = authService.signup(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                new ApiResponse<>(HttpStatus.CREATED.value(), "Merchant created successfully", response, null)
+        return ApiResponse.created(
+                "Merchant created successfully",
+                response
         );
-
     }
 
 }

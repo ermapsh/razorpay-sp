@@ -1,6 +1,6 @@
 package com.ermapsh.razorpay.common.exception;
 
-import com.ermapsh.razorpay.common.enums.ApiResponse;
+import com.ermapsh.razorpay.common.dto.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;

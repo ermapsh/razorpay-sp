@@ -9,7 +9,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: true
 
   flyway:
@@ -36,7 +36,7 @@ logging:
     com.ermapsh: DEBUG    # Replace with your base package
 
 merchant:
-  id: 9472c030-caf9-46e5-b5f4-79a8482a937a
+  id: 5dcf23a8-38ea-4e3d-92c8-a2c751efefea
 
 payment:
   order:
