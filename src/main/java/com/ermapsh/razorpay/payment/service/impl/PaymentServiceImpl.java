@@ -1,6 +1,7 @@
 package com.ermapsh.razorpay.payment.service.impl;
 
 import com.ermapsh.razorpay.common.enums.OrderStatus;
+import com.ermapsh.razorpay.common.enums.PaymentEvent;
 import com.ermapsh.razorpay.common.enums.PaymentStatus;
 import com.ermapsh.razorpay.common.exception.ResourceNotFoundException;
 import com.ermapsh.razorpay.payment.dto.request.PaymentInitRequest;
@@ -14,6 +15,7 @@ import com.ermapsh.razorpay.payment.mapper.PaymentMapper;
 import com.ermapsh.razorpay.payment.repository.OrderRepository;
 import com.ermapsh.razorpay.payment.repository.PaymentRepository;
 import com.ermapsh.razorpay.payment.service.PaymentService;
+import com.ermapsh.razorpay.payment.statemachine.PaymentTransitionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestHeader;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -33,6 +36,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final PaymentAdapterGatewayRouter paymentAdapterGatewayRouter;
     private final PaymentMapper paymentMapper;
+    private final PaymentTransitionService paymentTransitionService;
 
     @Override
     @Transactional
@@ -94,7 +98,9 @@ public class PaymentServiceImpl implements PaymentService {
         switch (result) {
             case PaymentResult.Pending(String registrationRef) -> payment.setProcessorReference(registrationRef);
             case PaymentResult.Failure(String errorCode, String errorDescription) -> {
-                payment.setPaymentStatus(PaymentStatus.FAILED);
+//                payment.setPaymentStatus(PaymentStatus.FAILED);
+
+                paymentTransitionService.apply(payment, PaymentEvent.AUTHORIZE_FAIL);
                 payment.setErrorCode(errorCode);
                 payment.setErrorDescription(errorDescription);
             }
@@ -110,6 +116,57 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponse capture(UUID merchantId, UUID paymentId) {
-        return null;
+        Payment payment = paymentRepository.findById(paymentId).
+                orElseThrow(()->  new ResourceNotFoundException("Payment not found {}"+ paymentId));
+
+//        payment.setPaymentStatus(PaymentStatus.CAPTURING);
+        paymentTransitionService.apply(payment, PaymentEvent.CAPTURE_REQUEST);
+        PaymentResult paymentResult = paymentAdapterGatewayRouter.capture(payment.getPaymentMethod(), paymentId);
+
+        if(paymentResult instanceof PaymentResult.Success success){
+
+            log.info("Payment captured, paymentId: {}", paymentId);
+//            payment.setPaymentStatus(PaymentStatus.CAPTURED);
+            paymentTransitionService.apply(payment, PaymentEvent.CAPTURE_SUCCESS);
+            payment.setCapturedAt(LocalDateTime.now());
+
+        }else if(paymentResult instanceof PaymentResult.Failure(String errorCode, String errorDescription)){
+
+//            payment.setPaymentStatus(PaymentStatus.AUTHORIZED);
+            paymentTransitionService.apply(payment, PaymentEvent.CAPTURE_FAIL);
+            payment.setErrorCode(errorCode);
+            payment.setErrorDescription(errorDescription);
+            log.info("Payment captured failed, paymentId: {}", paymentId);
+            log.info("Payment captured failed, error : {}", errorDescription);
+
+        }
+
+//        TODO send an outbox (kafka event)
+
+        return paymentMapper.toResponse(paymentRepository.save(payment));
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -42,6 +42,10 @@ public class PaymentTransitionLog extends BaseEntity {
     @Column(nullable = false)
     private PaymentEvent paymentEvent;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentStatus toStatus;
+
     @Column(name="actor", length = 100)
     @Enumerated(EnumType.STRING)
     private PaymentActor actor;
