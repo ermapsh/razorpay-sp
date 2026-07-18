@@ -41,3 +41,6 @@ merchant:
 payment:
   order:
     default_order_expiry_minutes: 30
+
+vault:
+  master-key: mynameismaheshfafaafaa

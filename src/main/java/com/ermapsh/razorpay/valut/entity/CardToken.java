@@ -3,10 +3,7 @@ package com.ermapsh.razorpay.valut.entity;
 
 import com.ermapsh.razorpay.common.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -17,6 +14,7 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class CardToken extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

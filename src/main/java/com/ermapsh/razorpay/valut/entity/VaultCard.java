@@ -1,11 +1,9 @@
 package com.ermapsh.razorpay.valut.entity;
 
 import com.ermapsh.razorpay.common.entity.BaseEntity;
+import com.ermapsh.razorpay.common.enums.CardBrand;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -16,6 +14,7 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class VaultCard extends BaseEntity {
 
     @Id
@@ -26,7 +25,7 @@ public class VaultCard extends BaseEntity {
     private String cardHolderName;
 
     @Column(nullable = false)
-    private String brand;
+    private CardBrand brand;
 
     @Column(nullable = false, length = 4)
     private String lastFour;
