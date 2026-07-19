@@ -1,6 +1,6 @@
-package com.ermapsh.razorpay.valut.validation.validator;
+package com.ermapsh.razorpay.vault.validation.validator;
 
-import com.ermapsh.razorpay.valut.validation.ExpiryYear;
+import com.ermapsh.razorpay.vault.validation.ExpiryYear;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 

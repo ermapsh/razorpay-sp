@@ -1,6 +1,6 @@
-package com.ermapsh.razorpay.valut.repository;
+package com.ermapsh.razorpay.vault.repository;
 
-import com.ermapsh.razorpay.valut.entity.VaultCard;
+import com.ermapsh.razorpay.vault.entity.VaultCard;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;

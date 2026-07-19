@@ -1,4 +1,4 @@
-package com.ermapsh.razorpay.valut.dto.response;
+package com.ermapsh.razorpay.vault.dto.response;
 
 import com.ermapsh.razorpay.common.enums.CardBrand;
 

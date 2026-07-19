@@ -1,20 +1,19 @@
-package com.ermapsh.razorpay.valut.service.impl;
+package com.ermapsh.razorpay.vault.service.impl;
 
 import com.ermapsh.razorpay.common.entity.Money;
 import com.ermapsh.razorpay.common.enums.CardBrand;
 import com.ermapsh.razorpay.common.exception.ResourceNotFoundException;
 import com.ermapsh.razorpay.common.util.RandomizerUtil;
-import com.ermapsh.razorpay.payment.gateway.dto.PaymentResult;
 import com.ermapsh.razorpay.payment.processor.PaymentProcessorRouter;
 import com.ermapsh.razorpay.payment.processor.dto.PaymentProcessorRequest;
 import com.ermapsh.razorpay.payment.processor.dto.PaymentProcessorResponse;
-import com.ermapsh.razorpay.valut.config.VaultEncryptionConfig;
-import com.ermapsh.razorpay.valut.dto.request.TokenizeRequest;
-import com.ermapsh.razorpay.valut.dto.response.TokenizeResponse;
-import com.ermapsh.razorpay.valut.entity.CardToken;
-import com.ermapsh.razorpay.valut.entity.VaultCard;
-import com.ermapsh.razorpay.valut.repository.CardTokenRepository;
-import com.ermapsh.razorpay.valut.service.VaultService;
+import com.ermapsh.razorpay.vault.config.VaultEncryptionConfig;
+import com.ermapsh.razorpay.vault.dto.request.TokenizeRequest;
+import com.ermapsh.razorpay.vault.dto.response.TokenizeResponse;
+import com.ermapsh.razorpay.vault.entity.CardToken;
+import com.ermapsh.razorpay.vault.entity.VaultCard;
+import com.ermapsh.razorpay.vault.repository.CardTokenRepository;
+import com.ermapsh.razorpay.vault.service.VaultService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.encrypt.BytesEncryptor;
@@ -25,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j

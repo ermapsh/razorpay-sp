@@ -1,4 +1,4 @@
-package com.ermapsh.razorpay.valut.validation;
+package com.ermapsh.razorpay.vault.validation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

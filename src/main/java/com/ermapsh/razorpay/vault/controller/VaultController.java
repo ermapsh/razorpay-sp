@@ -1,9 +1,9 @@
-package com.ermapsh.razorpay.valut.controller;
+package com.ermapsh.razorpay.vault.controller;
 
 import com.ermapsh.razorpay.common.dto.ApiResponse;
-import com.ermapsh.razorpay.valut.dto.request.TokenizeRequest;
-import com.ermapsh.razorpay.valut.dto.response.TokenizeResponse;
-import com.ermapsh.razorpay.valut.service.VaultService;
+import com.ermapsh.razorpay.vault.dto.request.TokenizeRequest;
+import com.ermapsh.razorpay.vault.dto.response.TokenizeResponse;
+import com.ermapsh.razorpay.vault.service.VaultService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

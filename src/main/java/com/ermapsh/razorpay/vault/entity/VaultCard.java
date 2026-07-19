@@ -1,4 +1,4 @@
-package com.ermapsh.razorpay.valut.entity;
+package com.ermapsh.razorpay.vault.entity;
 
 import com.ermapsh.razorpay.common.entity.BaseEntity;
 import com.ermapsh.razorpay.common.enums.CardBrand;

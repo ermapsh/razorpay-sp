@@ -1,9 +1,9 @@
-package com.ermapsh.razorpay.valut.service;
+package com.ermapsh.razorpay.vault.service;
 
 import com.ermapsh.razorpay.common.entity.Money;
 import com.ermapsh.razorpay.payment.processor.dto.PaymentProcessorResponse;
-import com.ermapsh.razorpay.valut.dto.request.TokenizeRequest;
-import com.ermapsh.razorpay.valut.dto.response.TokenizeResponse;
+import com.ermapsh.razorpay.vault.dto.request.TokenizeRequest;
+import com.ermapsh.razorpay.vault.dto.response.TokenizeResponse;
 import jakarta.validation.Valid;
 
 import java.util.Map;

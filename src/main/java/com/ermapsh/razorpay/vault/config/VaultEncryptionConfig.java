@@ -1,4 +1,4 @@
-package com.ermapsh.razorpay.valut.config;
+package com.ermapsh.razorpay.vault.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

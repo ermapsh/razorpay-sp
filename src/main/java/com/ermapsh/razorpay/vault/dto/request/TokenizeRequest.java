@@ -1,6 +1,6 @@
-package com.ermapsh.razorpay.valut.dto.request;
+package com.ermapsh.razorpay.vault.dto.request;
 
-import com.ermapsh.razorpay.valut.validation.ExpiryYear;
+import com.ermapsh.razorpay.vault.validation.ExpiryYear;
 import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.LuhnCheck;
 

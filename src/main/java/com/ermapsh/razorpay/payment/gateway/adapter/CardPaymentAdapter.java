@@ -4,7 +4,7 @@ import com.ermapsh.razorpay.payment.gateway.PaymentAdapter;
 import com.ermapsh.razorpay.payment.gateway.dto.PaymentRequest;
 import com.ermapsh.razorpay.payment.gateway.dto.PaymentResult;
 import com.ermapsh.razorpay.payment.processor.dto.PaymentProcessorResponse;
-import com.ermapsh.razorpay.valut.service.VaultService;
+import com.ermapsh.razorpay.vault.service.VaultService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
