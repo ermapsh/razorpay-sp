@@ -55,6 +55,6 @@ public class NetBankingAdapter implements PaymentAdapter {
 
     @Override
     public PaymentResult capture(UUID paymentId) {
-        return new PaymentResult.Success("NBK");
+        return new PaymentResult.Success("NBK_REF");
     }
 }

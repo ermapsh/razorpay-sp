@@ -2,6 +2,7 @@ package com.ermapsh.razorpay.payment.service.impl;
 
 import com.ermapsh.razorpay.common.enums.OrderStatus;
 import com.ermapsh.razorpay.common.enums.PaymentEvent;
+import com.ermapsh.razorpay.common.enums.PaymentMethod;
 import com.ermapsh.razorpay.common.enums.PaymentStatus;
 import com.ermapsh.razorpay.common.exception.ResourceNotFoundException;
 import com.ermapsh.razorpay.payment.dto.request.PaymentInitRequest;
@@ -94,6 +95,8 @@ public class PaymentServiceImpl implements PaymentService {
                 savedPayment.getMethodDetails()
         );
 
+        paymentTransitionService.apply(payment, PaymentEvent.AUTHORIZE_ATTEMPT);
+
         PaymentResult result = paymentAdapterGatewayRouter.initiate(paymentRequest); // it will choose the payment adapter -> and adapter will choose payment processor
         switch (result) {
             case PaymentResult.Pending(String registrationRef) -> payment.setProcessorReference(registrationRef);
@@ -144,6 +147,52 @@ public class PaymentServiceImpl implements PaymentService {
 //        TODO send an outbox (kafka event)
 
         return paymentMapper.toResponse(paymentRepository.save(payment));
+    }
+
+    @Override
+    public void resolveAuthorization(UUID paymentId, Boolean approve, String bankRef, String simBankErrorCode, String simulatedBankDecline) {
+
+         Payment payment = paymentRepository.findById(paymentId).orElseThrow(()->
+                new ResourceNotFoundException("Payment Not found: " + paymentId)
+         );
+
+        if(payment.getPaymentStatus() != PaymentStatus.AUTHORIZING){
+            log.warn("payment is not in authorized state, PaymentId:{}, status:{}", paymentId, payment.getPaymentStatus());
+            return;
+        }
+
+        Order order = payment.getOrder();
+        if(approve){
+            /* auto capturing here */
+            paymentTransitionService.apply(payment, PaymentEvent.AUTHORIZE_SUCCESS);
+            payment.setBankReference(bankRef);
+            payment.setAuthorizedAt(LocalDateTime.now());
+
+
+            paymentTransitionService.apply(payment, PaymentEvent.CAPTURE_REQUEST);
+            PaymentResult captureResult = paymentAdapterGatewayRouter.capture(payment.getPaymentMethod(), paymentId);
+
+            if(captureResult instanceof PaymentResult.Success(String bankReference)){
+                log.info("success result fo resolve authorization, bank: {}", bankReference);
+                paymentTransitionService.apply(payment, PaymentEvent.CAPTURE_SUCCESS);
+                payment.setCapturedAt(LocalDateTime.now());
+                order.setStatus(OrderStatus.PAID);
+            }else if(captureResult instanceof PaymentResult.Failure(String errorCode, String errorDescription)){
+                paymentTransitionService.apply(payment, PaymentEvent.CAPTURE_FAIL);
+                payment.setErrorCode(errorCode);
+                payment.setErrorDescription(errorDescription);
+            }
+
+        }else{
+            paymentTransitionService.apply(payment, PaymentEvent.AUTHORIZE_FAIL);
+            payment.setErrorCode(simBankErrorCode);
+            payment.setErrorDescription(simulatedBankDecline);
+        }
+
+        paymentRepository.save(payment);
+        orderRepository.save(order);
+
+        // TODO outbox kafka event
     }
 }
 
