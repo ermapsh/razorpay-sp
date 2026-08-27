@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
-@RequiredArgsConstructor
 @Configuration
+@RequiredArgsConstructor
 public class PaymentAdapterConfig {
 
     private final NetBankingAdapter netBankingAdapter;

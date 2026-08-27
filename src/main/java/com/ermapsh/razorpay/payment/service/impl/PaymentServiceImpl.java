@@ -5,6 +5,7 @@ import com.ermapsh.razorpay.common.enums.PaymentEvent;
 import com.ermapsh.razorpay.common.enums.PaymentMethod;
 import com.ermapsh.razorpay.common.enums.PaymentStatus;
 import com.ermapsh.razorpay.common.exception.ResourceNotFoundException;
+import com.ermapsh.razorpay.common.util.RandomizerUtil;
 import com.ermapsh.razorpay.payment.dto.request.PaymentInitRequest;
 import com.ermapsh.razorpay.payment.dto.response.PaymentResponse;
 import com.ermapsh.razorpay.payment.entity.Order;
@@ -30,7 +31,6 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional(readOnly = true)
 public class PaymentServiceImpl implements PaymentService {
 
     private final OrderRepository orderRepository;
@@ -78,6 +78,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .order(order)
                 .merchantId(merchantId)
                 .money(order.getAmount())
+                .idempotency(UUID.randomUUID().toString())
                 .paymentMethod(request.method())
                 .methodDetails(request.methodDetails())
                 .paymentStatus(PaymentStatus.CREATED)
@@ -88,7 +89,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         PaymentRequest paymentRequest = new PaymentRequest(
                 savedPayment.getId(),
-                request.orderId(),
+                order.getId(),
                 merchantId,
                 savedPayment.getMoney(),
                 savedPayment.getPaymentMethod(),
@@ -96,6 +97,7 @@ public class PaymentServiceImpl implements PaymentService {
         );
 
         paymentTransitionService.apply(payment, PaymentEvent.AUTHORIZE_ATTEMPT);
+
 
         PaymentResult result = paymentAdapterGatewayRouter.initiate(paymentRequest); // it will choose the payment adapter -> and adapter will choose payment processor
         switch (result) {
@@ -150,6 +152,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    @Transactional
     public void resolveAuthorization(UUID paymentId, Boolean approve, String bankRef, String simBankErrorCode, String simulatedBankDecline) {
 
          Payment payment = paymentRepository.findById(paymentId).orElseThrow(()->

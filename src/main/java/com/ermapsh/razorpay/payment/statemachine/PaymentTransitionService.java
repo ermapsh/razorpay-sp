@@ -17,20 +17,25 @@ public class PaymentTransitionService {
     private final PaymentTransitionLogRepository paymentTransitionLogRepository;
     private final PaymentStateMachine paymentStateMachine;
 
-    public PaymentStatus apply(Payment payment, PaymentEvent paymentEvent){
-        PaymentStatus toStatus = paymentStateMachine.transition(payment.getPaymentStatus(), paymentEvent);
+    public PaymentStatus apply(Payment payment, PaymentEvent paymentEvent) {
 
-        payment.setPaymentStatus(toStatus);
+        PaymentStatus fromStatus = payment.getPaymentStatus();
+
+        PaymentStatus toStatus = paymentStateMachine.transition(fromStatus, paymentEvent);
+
         PaymentTransitionLog log = PaymentTransitionLog.builder()
                 .payment(payment)
-                .fromStatus(payment.getPaymentStatus())
+                .fromStatus(fromStatus)
                 .paymentEvent(paymentEvent)
                 .toStatus(toStatus)
                 .actor(PaymentActor.SYSTEM)
                 .occurredAt(LocalDateTime.now())
                 .build();
 
+        payment.setPaymentStatus(toStatus);
+
         paymentTransitionLogRepository.save(log);
+
         return toStatus;
     }
 }

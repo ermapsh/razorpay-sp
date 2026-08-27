@@ -36,7 +36,7 @@ logging:
     com.ermapsh: DEBUG    # Replace with your base package
 
 merchant:
-  id: 5dcf23a8-38ea-4e3d-92c8-a2c751efefea
+  id: 6a6bb5a2-d94b-4adf-892b-c24d2dcd1ca6
 
 payment:
   order:

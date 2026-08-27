@@ -26,10 +26,6 @@ public class PaymentTransitionLog extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToOne(fetch = FetchType.LAZY) // optional
-    @JoinColumn( nullable = false, name = "order_id")
-    private Order order;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn( nullable = false, name = "payment_id")
     private Payment payment;

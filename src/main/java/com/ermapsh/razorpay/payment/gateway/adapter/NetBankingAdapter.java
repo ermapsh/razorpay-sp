@@ -21,12 +21,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class NetBankingAdapter implements PaymentAdapter {
 
-    private NetBankingPaymentProcessor netbankingPaymentProcessor;
-    private PaymentProcessorRouter paymentProcessorRouter;
+    private final NetBankingPaymentProcessor netbankingPaymentProcessor;
+    private final PaymentProcessorRouter paymentProcessorRouter;
 
     @Override
     public PaymentResult initiate(PaymentRequest request) {
-        log.info("initiate Payment with NetBanking PaymentProcessor, paymentId: {}", request.paymentId());
+        log.info("initiate Payment with NetBanking PaymentProcessor, paymentId: {}, orderId: {}", request.paymentId(), request.orderId());
 
         try {
             PaymentProcessorRequest paymentProcessorRequest = PaymentProcessorRequest.nonCard(
@@ -37,7 +37,7 @@ public class NetBankingAdapter implements PaymentAdapter {
             );
 
             PaymentProcessorResponse paymentProcessorResponse = paymentProcessorRouter.charge(paymentProcessorRequest);
-
+            log.info("paymentProcessorResponse: {}", paymentProcessorResponse);
             return switch (paymentProcessorResponse) {
 
                 case PaymentProcessorResponse.Pending pending -> new PaymentResult.Pending(pending.processorRef());

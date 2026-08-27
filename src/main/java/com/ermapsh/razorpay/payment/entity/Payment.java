@@ -38,7 +38,7 @@ public class Payment extends BaseEntity {
     @Column(nullable = false)
     private UUID merchantId;
 
-    @Column(length = 100)
+    @Column(length = 100, nullable = false)
     @Builder.Default
     private String idempotency = UUID.randomUUID().toString();
 
@@ -60,7 +60,7 @@ public class Payment extends BaseEntity {
     private Map<String, Object> methodDetails;
 
     @Column(nullable = false)
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus = PaymentStatus.CREATED;
 
     @Column(length = 100)
