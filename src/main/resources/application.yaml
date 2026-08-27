@@ -36,7 +36,7 @@ logging:
     com.ermapsh: DEBUG    # Replace with your base package
 
 merchant:
-  id: 6a6bb5a2-d94b-4adf-892b-c24d2dcd1ca6
+  id: 2da7e1df-8ccd-4b84-a131-f556c9b136c4
 
 payment:
   order:
@@ -60,3 +60,6 @@ payment:
 
 vault:
   master-key: mynameismaheshfafaafaa
+
+jwt:
+    secret-key: dont-use-in-prod-dsldsdsklsdfs2434rdfskffsfhsfsfklsf

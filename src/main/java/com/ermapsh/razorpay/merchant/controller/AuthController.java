@@ -1,12 +1,13 @@
 package com.ermapsh.razorpay.merchant.controller;
 
 import com.ermapsh.razorpay.common.dto.ApiResponse;
+import com.ermapsh.razorpay.merchant.dto.request.AppUserLogInRequest;
 import com.ermapsh.razorpay.merchant.dto.request.MerchantSignupRequest;
+import com.ermapsh.razorpay.merchant.dto.response.AppUserLogInResponse;
 import com.ermapsh.razorpay.merchant.dto.response.MerchantSignupResponse;
 import com.ermapsh.razorpay.merchant.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,6 +26,15 @@ public class AuthController {
         MerchantSignupResponse response = authService.signup(request);
         return ApiResponse.created(
                 "Merchant created successfully",
+                response
+        );
+    }
+
+    @PostMapping("login")
+    public ResponseEntity<ApiResponse<AppUserLogInResponse>> login(@RequestBody @Valid AppUserLogInRequest request) {
+        AppUserLogInResponse response = authService.login(request);
+        return ApiResponse.created(
+                "User fetch successfully",
                 response
         );
     }
