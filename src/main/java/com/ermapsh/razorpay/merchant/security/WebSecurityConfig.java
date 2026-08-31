@@ -1,5 +1,6 @@
 package com.ermapsh.razorpay.merchant.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -10,8 +11,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@RequiredArgsConstructor
 public class WebSecurityConfig {
 
     private static final String[] JWT_ROUTES = {
@@ -22,16 +25,19 @@ public class WebSecurityConfig {
             "/api/v1/orders/**", "/api/v1/payments/**", "/api/v1/order/**", "/api/v1/vault/**"
     };
 
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
     @Bean
     public SecurityFilterChain jwtChain(HttpSecurity http){
         return http.
                 securityMatcher(JWT_ROUTES).
-
                 csrf(csrf->csrf.disable()).
                 sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).
                 authorizeHttpRequests(auth-> auth.
-                        requestMatchers("/api/v1/auth/signup", "/api/v1/auth/login").permitAll()).
-                formLogin(form-> form.disable()).
+                        requestMatchers("/api/v1/auth/signup", "/api/v1/auth/login", "/webhook/**").permitAll().
+                        anyRequest().authenticated()
+                ).
+                addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class).
                 build();
     }
 
@@ -42,7 +48,7 @@ public class WebSecurityConfig {
 
 
     @Bean
-    public AuthenticationManager authenticationManager(AppUserDetailsService userDetailsService,
+    public AuthenticationManager authenticationManager(MerchantAppUserDetailsService userDetailsService,
                                                        PasswordEncoder passwordEncoder){
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);

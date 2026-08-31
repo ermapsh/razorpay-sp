@@ -33,6 +33,7 @@ logging:
     org.springframework.web: DEBUG
     org.springframework.validation: DEBUG
     org.springframework.web.servlet.DispatcherServlet: DEBUG
+    org.springframework.security: TRACE
     com.ermapsh: DEBUG    # Replace with your base package
 
 merchant:

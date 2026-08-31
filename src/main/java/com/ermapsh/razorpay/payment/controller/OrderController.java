@@ -1,6 +1,7 @@
 package com.ermapsh.razorpay.payment.controller;
 
 import com.ermapsh.razorpay.common.dto.ApiResponse;
+import com.ermapsh.razorpay.merchant.security.MerchantContext;
 import com.ermapsh.razorpay.payment.dto.request.CreateOrderRequest;
 import com.ermapsh.razorpay.payment.dto.response.CreateOrderResponse;
 import com.ermapsh.razorpay.payment.dto.response.PaymentResponse;
@@ -21,41 +22,26 @@ import java.util.UUID;
 public class OrderController {
 
     private final OrderService orderService;
-
-    @Value("${merchant.id}")
-    private UUID merchantId;
-
+    private final MerchantContext merchantContext;
 
     @PostMapping("")
     public ResponseEntity<ApiResponse<CreateOrderResponse>> createOrder(@RequestBody @Valid CreateOrderRequest request) {
-        return ApiResponse.created(
-                "order created successfully",
-                orderService.createOrder(merchantId, request)
-        );
+        return ApiResponse.created("order created successfully", orderService.createOrder(merchantContext.getMerchantId(), request));
     }
 
-    @PostMapping("/{merchantId}/{orderId}")
-    public ResponseEntity<ApiResponse<CreateOrderResponse>> getOrderById(@PathVariable UUID merchantId, @PathVariable UUID orderId) {
-        return ApiResponse.ok(
-                "order fetched successfully",
-                orderService.getOrderById(merchantId, orderId)
-        );
+    @PostMapping("/{orderId}")
+    public ResponseEntity<ApiResponse<CreateOrderResponse>> getOrderById(@PathVariable UUID orderId) {
+        return ApiResponse.ok("order fetched successfully", orderService.getOrderById(merchantContext.getMerchantId(), orderId));
     }
 
-    @DeleteMapping("/{merchantId}/{orderId}/cancel")
-    public ResponseEntity<ApiResponse<CreateOrderResponse>> cancelOrderById(@PathVariable UUID merchantId, @PathVariable UUID orderId) {
-        return ApiResponse.ok(
-                "order cancel successfully",
-                orderService.cancel(merchantId, orderId)
-        );
+    @DeleteMapping("/{orderId}/cancel")
+    public ResponseEntity<ApiResponse<CreateOrderResponse>> cancelOrderById(@PathVariable UUID orderId) {
+        return ApiResponse.ok("order cancel successfully", orderService.cancel(merchantContext.getMerchantId(), orderId));
     }
 
-    @PostMapping("/{merchantId}/{orderId}/payment_list")
-    public ResponseEntity<ApiResponse<List<PaymentResponse>>> listPayments(@PathVariable UUID merchantId, @PathVariable UUID orderId) {
-        return ApiResponse.ok(
-                "order created successfully",
-                orderService.listPayments(merchantId, orderId)
-        );
+    @PostMapping("/{orderId}/payment_list")
+    public ResponseEntity<ApiResponse<List<PaymentResponse>>> listPayments(@PathVariable UUID orderId) {
+        return ApiResponse.ok("order created successfully", orderService.listPayments(merchantContext.getMerchantId(), orderId));
     }
 
 }
