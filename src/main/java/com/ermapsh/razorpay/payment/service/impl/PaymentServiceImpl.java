@@ -6,6 +6,7 @@ import com.ermapsh.razorpay.common.enums.PaymentMethod;
 import com.ermapsh.razorpay.common.enums.PaymentStatus;
 import com.ermapsh.razorpay.common.exception.ResourceNotFoundException;
 import com.ermapsh.razorpay.common.util.RandomizerUtil;
+import com.ermapsh.razorpay.merchant.security.MerchantContext;
 import com.ermapsh.razorpay.payment.dto.request.PaymentInitRequest;
 import com.ermapsh.razorpay.payment.dto.response.PaymentResponse;
 import com.ermapsh.razorpay.payment.entity.Order;
@@ -41,7 +42,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public PaymentResponse initiate(@RequestHeader("merchantId") UUID merchantId, @Valid PaymentInitRequest request) {
+    public PaymentResponse initiate(UUID merchantId, PaymentInitRequest request) {
         /*
         if(paymentMethod == PaymentMethod.CARD){
 

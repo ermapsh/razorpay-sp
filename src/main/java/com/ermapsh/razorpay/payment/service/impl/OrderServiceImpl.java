@@ -25,7 +25,6 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class OrderServiceImpl implements OrderService {
 
     @Value("${payment.order.default_order_expiry_minutes}")
@@ -44,8 +43,6 @@ public class OrderServiceImpl implements OrderService {
                 orderRepository.existsByMerchantIdAndReceipt(merchantId, request.receipt())) {
             throw new DuplicateResourceException("Order with receipt already exists" + request.receipt());
         }
-
-        System.out.println(defaultOrderExpiryMinutes);
 
         Order newOrder = Order.builder().
                 receipt(request.receipt()).

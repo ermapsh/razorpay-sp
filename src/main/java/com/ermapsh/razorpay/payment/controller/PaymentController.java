@@ -1,6 +1,7 @@
 package com.ermapsh.razorpay.payment.controller;
 
 import com.ermapsh.razorpay.common.dto.ApiResponse;
+import com.ermapsh.razorpay.merchant.security.MerchantContext;
 import com.ermapsh.razorpay.payment.dto.request.PaymentInitRequest;
 import com.ermapsh.razorpay.payment.dto.response.PaymentResponse;
 import com.ermapsh.razorpay.payment.service.PaymentService;
@@ -18,13 +19,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PaymentController {
     private final PaymentService paymentService;
-
-    @Value("${merchant.id}")
-    private UUID merchantId; // will come through auth middleware
+    private final MerchantContext merchantContext;
 
     @PostMapping("")
     public ResponseEntity<ApiResponse<PaymentResponse>> initiate(@Valid @RequestBody PaymentInitRequest request) {
-//            return ResponseEntity.accepted().body("hii");
+        UUID merchantId = merchantContext.getMerchantId();
         return ApiResponse.created(
                 "Payment initiated",
                 paymentService.initiate(merchantId, request)
@@ -33,6 +32,7 @@ public class PaymentController {
 
     @PostMapping("/{paymentId}/capture")
     public ResponseEntity<ApiResponse<PaymentResponse>> capture(@RequestParam UUID paymentId) {
+        UUID merchantId = merchantContext.getMerchantId();
         return ApiResponse.ok(
                 "Payment capture",
                 paymentService.capture(merchantId, paymentId)

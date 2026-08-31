@@ -36,9 +36,6 @@ logging:
     org.springframework.security: TRACE
     com.ermapsh: DEBUG    # Replace with your base package
 
-merchant:
-  id: 2da7e1df-8ccd-4b84-a131-f556c9b136c4
-
 payment:
   order:
     default_order_expiry_minutes: 30

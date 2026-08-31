@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,7 @@ public class ApiKeyServiceImpl implements ApiKeyService {
     private final MerchantRepository merchantRepository;
     private final ApiKeyCreateResponseMapper apiKeyCreateResponseMapper;
     private static final Logger log = LoggerFactory.getLogger(ApiKeyServiceImpl.class);
+    private final BCryptPasswordEncoder BCrypt = new BCryptPasswordEncoder();
 
     @Override
     @Transactional
@@ -37,14 +39,14 @@ public class ApiKeyServiceImpl implements ApiKeyService {
         Merchant merchant = merchantRepository.findById(merchantId).
                 orElseThrow(() -> new ResourceNotFoundException("Merchant not found with id: " + merchantId));
 
-        String keyId = "rzp" + request.environment().name().toLowerCase()+"_"+ RandomizerUtil.randomBase64();
-        
+        String keyId = "rzp_" + request.environment().name().toLowerCase()+"_"+ RandomizerUtil.randomBase64();
+
         String rawSecret = RandomizerUtil.randomBase64(40);
 
         ApiKey apiKey = ApiKey.builder().
                 merchant(merchant).
                 keyId(keyId).
-                keySecretHash(rawSecret).
+                keySecretHash(BCrypt.encode(rawSecret)).
                 environment(request.environment()).
                 build();
 
@@ -98,7 +100,7 @@ public class ApiKeyServiceImpl implements ApiKeyService {
 
         String newRawSecret = RandomizerUtil.randomBase64(40);
         apiKey.setPreviousKeySecretHash(apiKey.getKeySecretHash());
-        apiKey.setKeySecretHash(newRawSecret); //TODO
+        apiKey.setKeySecretHash(BCrypt.encode(newRawSecret));
         apiKey.setRotatedAt(LocalDateTime.now());
         apiKey.setGracePeriodExpiresAt(LocalDateTime.now().plusDays(1));
         apiKeyRepository.save(apiKey);

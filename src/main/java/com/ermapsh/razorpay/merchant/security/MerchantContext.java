@@ -15,4 +15,9 @@ import java.util.UUID;
 public class MerchantContext {
     private UUID merchantId;
     private String keyId;
+
+    public void clear() {
+        merchantId = null;
+        keyId = null;
+    }
 }

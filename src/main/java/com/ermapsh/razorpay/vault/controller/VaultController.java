@@ -1,6 +1,7 @@
 package com.ermapsh.razorpay.vault.controller;
 
 import com.ermapsh.razorpay.common.dto.ApiResponse;
+import com.ermapsh.razorpay.merchant.security.MerchantContext;
 import com.ermapsh.razorpay.vault.dto.request.TokenizeRequest;
 import com.ermapsh.razorpay.vault.dto.response.TokenizeResponse;
 import com.ermapsh.razorpay.vault.service.VaultService;
@@ -21,15 +22,13 @@ import java.util.UUID;
 public class VaultController {
 
     private final VaultService vaultService;
-
-    @Value("${merchant.id}")
-    private UUID merchantId;
+    private final MerchantContext merchantContext;
 
     @PostMapping("/tokenize")
-    public ResponseEntity<ApiResponse<TokenizeResponse>> tokenize(@Valid @RequestBody TokenizeRequest request){
+    public ResponseEntity<ApiResponse<TokenizeResponse>> tokenize(@Valid @RequestBody TokenizeRequest request) {
         return ApiResponse.created(
                 "hii",
-                vaultService.tokenize(request, merchantId)
+                vaultService.tokenize(request, merchantContext.getMerchantId())
         );
     }
 }
