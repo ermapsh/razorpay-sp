@@ -57,7 +57,7 @@ payment:
         success-rate: 80
 
 vault:
-  master-key: mynameismaheshfafaafaa
+  master-key: WaSEhvr2NIezNb8XVLluMEtZWvc9fAu/Neyhs2eevEc=
 
 jwt:
     secret-key: dont-use-in-prod-dsldsdsklsdfs2434rdfskffsfhsfsfklsf

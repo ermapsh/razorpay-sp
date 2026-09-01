@@ -6,14 +6,20 @@ import jakarta.validation.ConstraintValidatorContext;
 
 import java.time.Year;
 
-public class ExpiryYearValidator implements ConstraintValidator<ExpiryYear, Integer> {
+public class ExpiryYearValidator
+        implements ConstraintValidator<ExpiryYear, Integer> {
 
     @Override
-    public boolean isValid(Integer inputYear, ConstraintValidatorContext constraintValidatorContext) {
-        if(inputYear == null){
-            return false;
+    public boolean isValid(
+            Integer inputYear,
+            ConstraintValidatorContext context
+    ) {
+        if (inputYear == null) {
+            return true;
         }
+
         int currentYear = Year.now().getValue();
+
         return inputYear >= currentYear;
     }
 }

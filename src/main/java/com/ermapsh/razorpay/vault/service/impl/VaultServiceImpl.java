@@ -13,6 +13,7 @@ import com.ermapsh.razorpay.vault.dto.response.TokenizeResponse;
 import com.ermapsh.razorpay.vault.entity.CardToken;
 import com.ermapsh.razorpay.vault.entity.VaultCard;
 import com.ermapsh.razorpay.vault.repository.CardTokenRepository;
+import com.ermapsh.razorpay.vault.repository.VaultCardRepository;
 import com.ermapsh.razorpay.vault.service.VaultService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Transactional
 public class VaultServiceImpl implements VaultService {
+    private final VaultCardRepository vaultCardRepository;
 
     private final CardTokenRepository cardTokenRepository;
     private final BytesEncryptor dekEncryptor;
@@ -60,6 +62,8 @@ public class VaultServiceImpl implements VaultService {
                 expiryMonth(request.expiryMonth().toString()).
                 expiryYear(request.expiryYear().toString()).
                 build();
+
+        vaultCardRepository.save(vaultCard);
 
         String token = "tok" + RandomizerUtil.randomBase64(32);
 
