@@ -1,5 +1,8 @@
 package com.ermapsh.razorpay.merchant.security;
 
+import com.ermapsh.razorpay.common.exception.RateLimiterException;
+import com.ermapsh.razorpay.common.ratelimit.RateLimitResult;
+import com.ermapsh.razorpay.common.ratelimit.RateLimiter;
 import com.ermapsh.razorpay.merchant.cache.ApiKeyCache;
 import com.ermapsh.razorpay.merchant.cache.ApiKeyCacheEntry;
 import com.ermapsh.razorpay.merchant.entity.ApiKey;
@@ -10,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -30,6 +34,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
+    @Value("${app.rate-limit.use-case.api-key.requests-per-minute}")
+    private Integer requestPerMin;
+
     private static final String BASIC_PREFIX = "Basic ";
 
     private final ApiKeyRepository apiKeyRepository;
@@ -37,6 +44,7 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
     private final MerchantContext merchantContext;
     private final HandlerExceptionResolver handlerExceptionResolver;
     private final ApiKeyCache apiKeyCache;
+    private final RateLimiter rateLimiter;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -69,6 +77,23 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
             if (apiKeyEntry == null || !apiKeyEntry.enabled() || !secretMatches(secretKey, apiKeyEntry))
                 throw new BadCredentialsException("API key is disabled");
 
+            RateLimitResult rateLimitResult = rateLimiter.check("apiKey:"+keyId, requestPerMin, 60 );
+
+            if (!rateLimitResult.isAllowed()) {
+                log.warn("Too many requests for keyId: {}", keyId);
+                response.setHeader(
+                        "Retry-After",
+                        String.valueOf(rateLimitResult.retryAfterSeconds())
+                );
+
+                throw new RateLimiterException(
+                        "Too many requests. Please try again later.",
+                        rateLimitResult.retryAfterSeconds()
+                );
+            }
+
+            response.setHeader("X-RateLimit", String.valueOf(requestPerMin));
+            response.setHeader("X-RateLimit-Remaining", String.valueOf(rateLimitResult.remaining()));
 
             // Check secret
             if (!secretMatches(secretKey, apiKeyEntry)) throw new BadCredentialsException("Invalid API key");

@@ -9,6 +9,7 @@ import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -106,6 +107,22 @@ public class GlobalExceptionHandler {
                         null
                 )
         );
+    }
 
+    @ExceptionHandler(RateLimiterException.class)
+    public ResponseEntity<ApiResponse<?>> handleRateLimiterException(
+            RateLimiterException ex) {
+
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header("X-RateLimit-Remaining", String.valueOf(0))
+                .header("Retry-after", String.valueOf(ex.getRetryAfterSeconds()))
+                .header("X-Rate-Reset", String.valueOf(Instant.now().plusSeconds(ex.getRetryAfterSeconds()).getEpochSecond()))
+                .body(new ApiResponse<>(
+                        HttpStatus.TOO_MANY_REQUESTS.value(),
+                        ex.getMessage(),
+                        null,
+                        "RATE_LIMIT_EXCEEDED"
+                )
+        );
     }
 }
