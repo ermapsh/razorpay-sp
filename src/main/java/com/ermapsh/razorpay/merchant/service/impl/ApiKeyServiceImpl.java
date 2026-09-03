@@ -2,6 +2,7 @@ package com.ermapsh.razorpay.merchant.service.impl;
 
 import com.ermapsh.razorpay.common.exception.ResourceNotFoundException;
 import com.ermapsh.razorpay.common.util.RandomizerUtil;
+import com.ermapsh.razorpay.merchant.cache.ApiKeyCache;
 import com.ermapsh.razorpay.merchant.dto.request.CreateApiRequest;
 import com.ermapsh.razorpay.merchant.dto.response.ApiKeyCreateResponse;
 import com.ermapsh.razorpay.merchant.dto.response.GetAllApiByMerchant;
@@ -32,6 +33,7 @@ public class ApiKeyServiceImpl implements ApiKeyService {
     private final ApiKeyCreateResponseMapper apiKeyCreateResponseMapper;
     private static final Logger log = LoggerFactory.getLogger(ApiKeyServiceImpl.class);
     private final BCryptPasswordEncoder BCrypt = new BCryptPasswordEncoder();
+    private final ApiKeyCache apiKeyCache;
 
     @Override
     @Transactional
@@ -39,7 +41,7 @@ public class ApiKeyServiceImpl implements ApiKeyService {
         Merchant merchant = merchantRepository.findById(merchantId).
                 orElseThrow(() -> new ResourceNotFoundException("Merchant not found with id: " + merchantId));
 
-        String keyId = "rzp_" + request.environment().name().toLowerCase()+"_"+ RandomizerUtil.randomBase64();
+        String keyId = "rzp_" + request.environment().name().toLowerCase() + "_" + RandomizerUtil.randomBase64();
 
         String rawSecret = RandomizerUtil.randomBase64(40);
 
@@ -83,20 +85,19 @@ public class ApiKeyServiceImpl implements ApiKeyService {
     @Override
     @Transactional
     public void revoke(UUID merchantId, UUID keyId) {
-        ApiKey apiKey = apiKeyRepository.findById(keyId).filter(k-> k.getMerchant().getId().equals(merchantId)).orElseThrow(
-                ()-> new ResourceNotFoundException("ApiKey: "+ keyId));
+        ApiKey apiKey = apiKeyRepository.findById(keyId).filter(k -> k.getMerchant().getId().equals(merchantId)).orElseThrow(
+                () -> new ResourceNotFoundException("ApiKey: " + keyId));
         apiKey.setEnabled(false);
+        apiKeyCache.evict(apiKey.getKeyId());
     }
 
     @Override
     @Transactional
     public ApiKeyCreateResponse rotateKey(UUID merchantId, UUID keyId) {
-        ApiKey apiKey = apiKeyRepository.findById(keyId).filter(k-> k.getMerchant().getId().equals(merchantId)).orElseThrow(
-                ()-> new ResourceNotFoundException("ApiKey: "+ keyId));
+        ApiKey apiKey = apiKeyRepository.findById(keyId).filter(k -> k.getMerchant().getId().equals(merchantId)).orElseThrow(
+                () -> new ResourceNotFoundException("ApiKey: " + keyId));
 
-        if(!apiKey.isEnabled()){
-            throw new RuntimeException("Cannot rotate disabled API KEY: " + keyId);
-        }
+        if (!apiKey.isEnabled()) throw new RuntimeException("Cannot rotate disabled API KEY: " + keyId);
 
         String newRawSecret = RandomizerUtil.randomBase64(40);
         apiKey.setPreviousKeySecretHash(apiKey.getKeySecretHash());
@@ -104,6 +105,8 @@ public class ApiKeyServiceImpl implements ApiKeyService {
         apiKey.setRotatedAt(LocalDateTime.now());
         apiKey.setGracePeriodExpiresAt(LocalDateTime.now().plusDays(1));
         apiKeyRepository.save(apiKey);
+
+        apiKeyCache.evict(apiKey.getKeyId());
 
         return new ApiKeyCreateResponse(
                 apiKey.getId(),

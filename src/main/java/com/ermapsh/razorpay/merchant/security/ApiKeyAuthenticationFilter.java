@@ -1,5 +1,7 @@
 package com.ermapsh.razorpay.merchant.security;
 
+import com.ermapsh.razorpay.merchant.cache.ApiKeyCache;
+import com.ermapsh.razorpay.merchant.cache.ApiKeyCacheEntry;
 import com.ermapsh.razorpay.merchant.entity.ApiKey;
 import com.ermapsh.razorpay.merchant.repository.ApiKeyRepository;
 import jakarta.servlet.FilterChain;
@@ -34,27 +36,21 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
     private final BCryptPasswordEncoder BCrypt = new BCryptPasswordEncoder();
     private final MerchantContext merchantContext;
     private final HandlerExceptionResolver handlerExceptionResolver;
+    private final ApiKeyCache apiKeyCache;
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         log.info("Incoming request: {}", request.getRequestURI());
 
         try {
 
-            String authorizationHeader =
-                    request.getHeader("Authorization");
+            String authorizationHeader = request.getHeader("Authorization");
 
             // Same idea as JwtAuthenticationFilter:
             // If this request doesn't contain Basic Auth,
             // let the request continue.
-            if (authorizationHeader == null ||
-                    !authorizationHeader.startsWith(BASIC_PREFIX)) {
-
+            if (authorizationHeader == null || !authorizationHeader.startsWith(BASIC_PREFIX)) {
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -62,129 +58,77 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
             // Decode keyId:secret
             String[] credentials = decodeHeader(authorizationHeader);
 
-            if (credentials == null) {
-                throw new BadCredentialsException(
-                        "Malformed API key header"
-                );
-            }
+            if (credentials == null) throw new BadCredentialsException("Malformed API key header");
 
             String keyId = credentials[0];
             String secretKey = credentials[1];
 
-            // Find API key
-            ApiKey apiKey = apiKeyRepository
-                    .findByKeyId(keyId)
-                    .orElseThrow(() ->
-                            new BadCredentialsException(
-                                    "Invalid API key"
-                            )
-                    );
+            ApiKeyCacheEntry apiKeyEntry = apiKeyCache.get(keyId).orElseGet(() -> loadAndCache(keyId));
 
             // Check enabled
-            if (!apiKey.isEnabled()) {
-                throw new BadCredentialsException(
-                        "API key is disabled"
-                );
-            }
+            if (apiKeyEntry == null || !apiKeyEntry.enabled() || !secretMatches(secretKey, apiKeyEntry))
+                throw new BadCredentialsException("API key is disabled");
+
 
             // Check secret
-            if (!secretMatches(secretKey, apiKey)) {
-                throw new BadCredentialsException(
-                        "Invalid API key"
-                );
-            }
+            if (!secretMatches(secretKey, apiKeyEntry)) throw new BadCredentialsException("Invalid API key");
 
             // Create authentication
-            var auth =
-                    new UsernamePasswordAuthenticationToken(
-                            keyId,
-                            null,
-                            List.of(
-                                    new SimpleGrantedAuthority(
-                                            "API_KEY_ROLE"
-                                    )
-                            )
-                    );
+            var auth = new UsernamePasswordAuthenticationToken(keyId, null, List.of(new SimpleGrantedAuthority("API_KEY_ROLE")));
 
-            SecurityContextHolder
-                    .getContext()
-                    .setAuthentication(auth);
+            SecurityContextHolder.getContext().setAuthentication(auth);
 
             // Set MerchantContext
-            merchantContext.setMerchantId(
-                    apiKey.getMerchant().getId()
-            );
+            merchantContext.setMerchantId(apiKeyEntry.merchantId());
+            merchantContext.setKeyId(apiKeyEntry.keyId());
 
-            merchantContext.setKeyId(
-                    apiKey.getKeyId()
-            );
-
-            log.info(
-                    "API key authenticated successfully. keyId={}, merchantId={}",
-                    apiKey.getKeyId(),
-                    apiKey.getMerchant().getId()
-            );
+            log.info("API key authenticated successfully. keyId={}, merchantId={}", apiKeyEntry.keyId(), apiKeyEntry.merchantId());
 
             // Continue
             filterChain.doFilter(request, response);
-
         } catch (Exception e) {
 
-            log.error(
-                    "API key authentication failed: {}",
-                    e.getMessage()
-            );
+            log.error("API key authentication failed: {}", e.getMessage());
 
             SecurityContextHolder.clearContext();
             merchantContext.clear();
 
-            handlerExceptionResolver.resolveException(
-                    request,
-                    response,
-                    null,
-                    e
-            );
+            handlerExceptionResolver.resolveException(request, response, null, e);
         }
     }
 
-    private boolean secretMatches(
-            String rawSecret,
-            ApiKey apiKey
-    ) {
-
-        if (BCrypt.matches(
-                rawSecret,
-                apiKey.getKeySecretHash()
-        )) {
-            return true;
-        }
-
-        boolean gracePeriod =
-                apiKey.getGracePeriodExpiresAt() != null
-                        && LocalDateTime.now().isBefore(
-                        apiKey.getGracePeriodExpiresAt()
-                );
-
-        return gracePeriod
-                && apiKey.getPreviousKeySecretHash() != null
-                && BCrypt.matches(
-                rawSecret,
-                apiKey.getPreviousKeySecretHash()
+    private ApiKeyCacheEntry loadAndCache(String keyId) {
+        // Find API key
+        ApiKey apiKey = apiKeyRepository.findByKeyId(keyId).orElse(null);
+        if (apiKey == null) return null;
+        ApiKeyCacheEntry apiKeyCacheEntry = new ApiKeyCacheEntry(
+                apiKey.getMerchant().getId(),
+                apiKey.getKeyId(),
+                apiKey.getKeySecretHash(),
+                apiKey.getPreviousKeySecretHash(),
+                apiKey.getEnvironment(),
+                apiKey.isEnabled(),
+                apiKey.getRotatedAt(),
+                apiKey.getGracePeriodExpiresAt()
         );
+        apiKeyCache.put(apiKey.getKeyId(), apiKeyCacheEntry);
+        return apiKeyCacheEntry;
+    }
+
+    private boolean secretMatches(String rawSecret, ApiKeyCacheEntry apiKeyEntry) {
+        if (BCrypt.matches(rawSecret, apiKeyEntry.keySecretHash())) return true;
+        return apiKeyEntry.isInGracePeriod() &&
+               apiKeyEntry.previousKeySecretHash() != null
+               && BCrypt.matches(rawSecret, apiKeyEntry.previousKeySecretHash());
     }
 
     private String[] decodeHeader(String header) {
 
         try {
 
-            String encoded =
-                    header.substring(BASIC_PREFIX.length());
+            String encoded = header.substring(BASIC_PREFIX.length());
 
-            String decoded =
-                    new String(
-                            Base64.getDecoder().decode(encoded),
-                            StandardCharsets.UTF_8
-                    );
+            String decoded = new String(Base64.getDecoder().decode(encoded), StandardCharsets.UTF_8);
 
             int colon = decoded.indexOf(":");
 
@@ -192,20 +136,15 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
                 return null;
             }
 
-            String keyId =
-                    decoded.substring(0, colon);
+            String keyId = decoded.substring(0, colon);
 
-            String secretKey =
-                    decoded.substring(colon + 1);
+            String secretKey = decoded.substring(colon + 1);
 
             if (secretKey.isBlank()) {
                 return null;
             }
 
-            return new String[]{
-                    keyId,
-                    secretKey
-            };
+            return new String[]{keyId, secretKey};
 
         } catch (IllegalArgumentException e) {
             return null;
