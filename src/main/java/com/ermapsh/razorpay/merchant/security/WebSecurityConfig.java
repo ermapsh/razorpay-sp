@@ -1,5 +1,8 @@
 package com.ermapsh.razorpay.merchant.security;
 
+import com.ermapsh.razorpay.common.idempotency.IdempotencyFilter;
+import com.ermapsh.razorpay.merchant.security.filter.ApiKeyAuthenticationFilter;
+import com.ermapsh.razorpay.merchant.security.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,17 +27,39 @@ public class WebSecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final ApiKeyAuthenticationFilter apiKeyAuthenticationFilter;
+    private final IdempotencyFilter idempotencyFilter;
 
-    @Order(1)
     @Bean
+    @Order(1)
     public SecurityFilterChain jwtChain(HttpSecurity http) {
-        return http.securityMatcher(JWT_ROUTES).csrf(csrf -> csrf.disable()).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authorizeHttpRequests(auth -> auth.requestMatchers("/api/v1/auth/signup", "/api/v1/auth/login").permitAll().anyRequest().authenticated()).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class).build();
+        return http
+                .securityMatcher(JWT_ROUTES)
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/v1/auth/signup", "/v1/auth/login", "/webhook/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(idempotencyFilter, JwtAuthenticationFilter.class)
+                .build();
     }
 
-    @Order(2)
     @Bean
+    @Order(2)
     public SecurityFilterChain apiKeyChain(HttpSecurity http) {
-        return http.securityMatcher(API_KEY_ROUTES).csrf(csrf -> csrf.disable()).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authorizeHttpRequests(auth -> auth.anyRequest().authenticated()).addFilterAfter(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class).build();
+        return http
+                .securityMatcher(API_KEY_ROUTES)
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(idempotencyFilter, ApiKeyAuthenticationFilter.class)
+                .build();
     }
 
     @Bean

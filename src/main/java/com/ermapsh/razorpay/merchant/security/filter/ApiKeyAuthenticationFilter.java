@@ -1,4 +1,4 @@
-package com.ermapsh.razorpay.merchant.security;
+package com.ermapsh.razorpay.merchant.security.filter;
 
 import com.ermapsh.razorpay.common.exception.RateLimiterException;
 import com.ermapsh.razorpay.common.ratelimit.RateLimitResult;
@@ -7,6 +7,7 @@ import com.ermapsh.razorpay.merchant.cache.ApiKeyCache;
 import com.ermapsh.razorpay.merchant.cache.ApiKeyCacheEntry;
 import com.ermapsh.razorpay.merchant.entity.ApiKey;
 import com.ermapsh.razorpay.merchant.repository.ApiKeyRepository;
+import com.ermapsh.razorpay.merchant.security.MerchantContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,7 +26,6 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
 
