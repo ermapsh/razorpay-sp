@@ -1,5 +1,7 @@
-package com.ermapsh.razorpay.common.ratelimit;
+package com.ermapsh.razorpay.common.ratelimit.algo;
 
+import com.ermapsh.razorpay.common.ratelimit.RateLimitResult;
+import com.ermapsh.razorpay.common.ratelimit.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
