@@ -3,6 +3,7 @@ package com.ermapsh.razorpay.merchant.entity;
 import com.ermapsh.razorpay.common.entity.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -14,6 +15,9 @@ import java.util.UUID;
         @Index(name = "idx_customer_email", columnList = "email"),
     }
 )
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class Customer extends BaseEntity {
 
     @Id
@@ -31,7 +35,11 @@ public class Customer extends BaseEntity {
     private String email;
 
     @Column(nullable = false)
-    private String contactNumber;
+    private String phone;
 
     private LocalDateTime deletedAt;
+
+    public UUID getId() {
+        return id;
+    }
 }

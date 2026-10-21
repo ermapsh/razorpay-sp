@@ -4,6 +4,7 @@ import com.ermapsh.razorpay.common.enums.OrderStatus;
 import com.ermapsh.razorpay.common.exception.BusinessRuleViolationException;
 import com.ermapsh.razorpay.common.exception.DuplicateResourceException;
 import com.ermapsh.razorpay.common.exception.ResourceNotFoundException;
+import com.ermapsh.razorpay.merchant.service.CustomerService;
 import com.ermapsh.razorpay.payment.dto.request.CreateOrderRequest;
 import com.ermapsh.razorpay.payment.dto.response.CreateOrderResponse;
 import com.ermapsh.razorpay.payment.dto.response.PaymentResponse;
@@ -15,6 +16,7 @@ import com.ermapsh.razorpay.payment.repository.OrderRepository;
 import com.ermapsh.razorpay.payment.repository.PaymentRepository;
 import com.ermapsh.razorpay.payment.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
@@ -34,23 +37,39 @@ public class OrderServiceImpl implements OrderService {
     private final PaymentRepository paymentRepository;
     private final PaymentMapper paymentMapper;
     private final CreateOrderResponseMapper createOrderResponseMapper;
+    private final CustomerService customerService;
 
     @Override
-    @Transactional
+    @Transactional()
     public CreateOrderResponse createOrder(UUID merchantId, CreateOrderRequest request) {
-        System.out.println("${defaultOrderExpiryMinutes}");
+//        System.out.println("${defaultOrderExpiryMinutes}");
         if (request.receipt() != null &&
                 orderRepository.existsByMerchantIdAndReceipt(merchantId, request.receipt())) {
             throw new DuplicateResourceException("Order with receipt already exists" + request.receipt());
         }
 
+        UUID customerId = null;
+        if (request.customer() != null) {
+            customerId = customerService.findOrCreate(
+                    merchantId,
+                    request.customer().email(),
+                    request.customer().name(),
+                    request.customer().phone()
+            );
+
+            log.info("customerId, {}", customerId);
+        }
+
+
+
         Order newOrder = Order.builder().
                 receipt(request.receipt()).
                 amount(request.amount()).
                 notes(request.notes()).
-
-                expiresAt(request.expiresAt() != null ?  request.expiresAt(): LocalDateTime.now().plusMinutes(defaultOrderExpiryMinutes)).
                 merchantId(merchantId).
+                customerId(customerId).
+                status(OrderStatus.CREATED).
+                expiresAt(request.expiresAt() != null ? request.expiresAt() : LocalDateTime.now().plusMinutes(defaultOrderExpiryMinutes)).
                 build();
 
         Order savedOrder = orderRepository.save(newOrder);
@@ -61,8 +80,8 @@ public class OrderServiceImpl implements OrderService {
         return createOrderResponseMapper.toResponse(savedOrder);
     }
 
-    private Order getOrder(UUID orderId, UUID merchantId){
-        return  orderRepository.findByIdAndMerchantId(orderId, merchantId).orElseThrow(()->
+    private Order getOrder(UUID orderId, UUID merchantId) {
+        return orderRepository.findByIdAndMerchantId(orderId, merchantId).orElseThrow(() ->
                 new ResourceNotFoundException("Order Id not found associate with merchant"));
     }
 
@@ -77,7 +96,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public CreateOrderResponse cancel(UUID merchantId, UUID orderId) {
         Order order = getOrder(orderId, merchantId);
-        if((order.getStatus() == OrderStatus.CANCELLED) || (order.getStatus() == OrderStatus.PAID) ){
+        if ((order.getStatus() == OrderStatus.CANCELLED) || (order.getStatus() == OrderStatus.PAID)) {
             throw new BusinessRuleViolationException(400, "Order cannot be cancelled because it is already " + order.getStatus().name());
         }
 

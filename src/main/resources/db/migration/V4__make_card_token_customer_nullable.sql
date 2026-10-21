@@ -1,0 +1,2 @@
+ALTER TABLE card_token
+ALTER COLUMN customer DROP NOT NULL;

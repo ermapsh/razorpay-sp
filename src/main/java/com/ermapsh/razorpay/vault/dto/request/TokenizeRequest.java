@@ -25,8 +25,7 @@ public record TokenizeRequest(
         @NotNull(message = "Expiry year cannot be null")
         @ExpiryYear
         Integer expiryYear,
-
-
+        
         @Size(min = 3, message = "Card Holder name should have at 3 characters")
         String cardHolderName,
 

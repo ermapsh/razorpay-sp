@@ -15,7 +15,6 @@ import com.ermapsh.razorpay.merchant.repository.AppUserRepository;
 import com.ermapsh.razorpay.merchant.repository.MerchantRepository;
 import com.ermapsh.razorpay.merchant.security.JwtUtil;
 import com.ermapsh.razorpay.merchant.service.AuthService;
-import io.jsonwebtoken.Jwt;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -43,6 +42,13 @@ public class AuthServiceImp implements AuthService {
         if (merchantRepository.existsByEmail(request.email())) {
             throw new DuplicateResourceException("Email already exists "  + request.email());
         }
+
+        if (merchantRepository.existsByBusinessName(request.businessName())) {
+            throw new DuplicateResourceException(
+                    "Business name already exists: " + request.businessName()
+            );
+        }
+
 
         // Create a new merchant entity and save it to the database
         /*

@@ -32,6 +32,9 @@ public class Order extends BaseEntity {
     @Column(nullable = false, name = "merchant_id")
     private UUID merchantId;
 
+    @Column(name = "customer_id")
+    private UUID customerId;
+
     @Embedded
     private Money amount;
 

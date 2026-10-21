@@ -4,7 +4,7 @@
 ### java version: 25
 
 
-## Stampede
+## Cache Stampede
 - A cache stampede happens when a popular cache entry expires, and many requests simultaneously find the cache empty and all hit the database/service
 
 

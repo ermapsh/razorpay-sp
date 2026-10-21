@@ -25,9 +25,8 @@ public class CardToken extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "vault_card_id")
-    private VaultCard vaultCard;
+    private VaultCard  vaultCard;
 
-    @Column(nullable = false)
     private UUID customer;
 
     @Column(nullable = false)

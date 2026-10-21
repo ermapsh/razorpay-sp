@@ -19,13 +19,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ApiKeyServiceImpl implements ApiKeyService {
 
     private final ApiKeyRepository apiKeyRepository;
@@ -36,7 +36,7 @@ public class ApiKeyServiceImpl implements ApiKeyService {
     private final ApiKeyCache apiKeyCache;
 
     @Override
-    @Transactional
+    @Transactional // overriding transaction
     public ApiKeyCreateResponse create(UUID merchantId, @Valid CreateApiRequest request) {
         Merchant merchant = merchantRepository.findById(merchantId).
                 orElseThrow(() -> new ResourceNotFoundException("Merchant not found with id: " + merchantId));
@@ -83,7 +83,7 @@ public class ApiKeyServiceImpl implements ApiKeyService {
 
 
     @Override
-    @Transactional
+    @Transactional // here we are not saving that data that will manage by transactional
     public void revoke(UUID merchantId, UUID keyId) {
         ApiKey apiKey = apiKeyRepository.findById(keyId).filter(k -> k.getMerchant().getId().equals(merchantId)).orElseThrow(
                 () -> new ResourceNotFoundException("ApiKey: " + keyId));
