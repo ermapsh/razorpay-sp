@@ -1,5 +1,6 @@
 package com.ermapsh.razorpay.payment.service.impl;
 
+import com.ermapsh.razorpay.common.enums.EventAggregateType;
 import com.ermapsh.razorpay.common.enums.OrderStatus;
 import com.ermapsh.razorpay.common.exception.BusinessRuleViolationException;
 import com.ermapsh.razorpay.common.exception.DuplicateResourceException;
@@ -9,10 +10,13 @@ import com.ermapsh.razorpay.payment.dto.request.CreateOrderRequest;
 import com.ermapsh.razorpay.payment.dto.response.CreateOrderResponse;
 import com.ermapsh.razorpay.payment.dto.response.PaymentResponse;
 import com.ermapsh.razorpay.payment.entity.Order;
+import com.ermapsh.razorpay.payment.entity.OutboxEvent;
 import com.ermapsh.razorpay.payment.entity.Payment;
 import com.ermapsh.razorpay.payment.mapper.CreateOrderResponseMapper;
 import com.ermapsh.razorpay.payment.mapper.PaymentMapper;
+import com.ermapsh.razorpay.payment.outbox.OutboxEventPublisher;
 import com.ermapsh.razorpay.payment.repository.OrderRepository;
+import com.ermapsh.razorpay.payment.repository.OutboxEventRepository;
 import com.ermapsh.razorpay.payment.repository.PaymentRepository;
 import com.ermapsh.razorpay.payment.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -38,9 +43,10 @@ public class OrderServiceImpl implements OrderService {
     private final PaymentMapper paymentMapper;
     private final CreateOrderResponseMapper createOrderResponseMapper;
     private final CustomerService customerService;
+    private final OutboxEventPublisher outboxEventPublisher;
 
     @Override
-    @Transactional()
+    @Transactional
     public CreateOrderResponse createOrder(UUID merchantId, CreateOrderRequest request) {
 //        System.out.println("${defaultOrderExpiryMinutes}");
         if (request.receipt() != null &&
@@ -61,7 +67,6 @@ public class OrderServiceImpl implements OrderService {
         }
 
 
-
         Order newOrder = Order.builder().
                 receipt(request.receipt()).
                 amount(request.amount()).
@@ -74,7 +79,15 @@ public class OrderServiceImpl implements OrderService {
 
         Order savedOrder = orderRepository.save(newOrder);
 
-        // TODO: publish kafka event about order creation
+        outboxEventPublisher.publish(EventAggregateType.ORDER, savedOrder.getId(), "ORDER_CREATE",
+                Map.of(
+                        "orderId", savedOrder.getId(),
+                        "merchantId", merchantId.toString(),
+                        "status", savedOrder.getStatus().name(),
+                        "amountUnits", savedOrder.getAmount().getAmountUnits(),
+                        "amountCurrency", savedOrder.getAmount().getCurrency()
+                )
+        );
 
         /*return new CreateOrderResponse(savedOrder.getId(),savedOrder.getMerchantId(),savedOrder.getReceipt(),savedOrder.getAmount(),savedOrder.getStatus(),savedOrder.getAttempts(),savedOrder.getNotes(),savedOrder.getExpiresAt(),null);*/
         return createOrderResponseMapper.toResponse(savedOrder);
@@ -101,8 +114,20 @@ public class OrderServiceImpl implements OrderService {
         }
 
         order.setStatus(OrderStatus.CANCELLED);
-        orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
 //        return modelMapper.map(order, CreateOrderResponse.class);
+
+
+        outboxEventPublisher.publish(EventAggregateType.ORDER, savedOrder.getId(), "ORDER_CANCELLED",
+                Map.of(
+                        "orderId", savedOrder.getId(),
+                        "merchantId", merchantId.toString(),
+                        "status", savedOrder.getStatus().name(),
+                        "amountUnits", savedOrder.getAmount().getAmountUnits(),
+                        "amountCurrency", savedOrder.getAmount().getCurrency()
+                )
+        );
+
         return createOrderResponseMapper.toResponse(order);
     }
 

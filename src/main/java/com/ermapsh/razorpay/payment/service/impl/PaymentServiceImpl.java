@@ -1,5 +1,6 @@
 package com.ermapsh.razorpay.payment.service.impl;
 
+import com.ermapsh.razorpay.common.enums.EventAggregateType;
 import com.ermapsh.razorpay.common.enums.OrderStatus;
 import com.ermapsh.razorpay.common.enums.PaymentEvent;
 import com.ermapsh.razorpay.common.enums.PaymentStatus;
@@ -12,6 +13,7 @@ import com.ermapsh.razorpay.payment.gateway.PaymentAdapterGatewayRouter;
 import com.ermapsh.razorpay.payment.gateway.dto.PaymentRequest;
 import com.ermapsh.razorpay.payment.gateway.dto.PaymentResult;
 import com.ermapsh.razorpay.payment.mapper.PaymentMapper;
+import com.ermapsh.razorpay.payment.outbox.OutboxEventPublisher;
 import com.ermapsh.razorpay.payment.repository.OrderRepository;
 import com.ermapsh.razorpay.payment.repository.PaymentRepository;
 import com.ermapsh.razorpay.payment.service.PaymentService;
@@ -20,7 +22,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -33,6 +37,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentAdapterGatewayRouter paymentAdapterGatewayRouter;
     private final PaymentMapper paymentMapper;
     private final PaymentTransitionService paymentTransitionService;
+    private final OutboxEventPublisher outboxEventPublisher;
 
     @Override
     // @Transactional(isolation = Isolation.REPEATABLE_READ) // optimistic locking
@@ -41,20 +46,20 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponse initiate(UUID merchantId, PaymentInitRequest request) {
         /*
          * if(paymentMethod == PaymentMethod.CARD){
-         * 
+         *
          * }else if(paymentMethod == PaymentMethod.UPI){
-         * 
+         *
          * }
          * switch (paymentMethod){
          * case CARD -> {}
-         * 
+         *
          * case UPI -> {}
          * }
-         * 
+         *
          * our code should be open for modification/close for modification
          * if we write such like hardcoding condition then we have to write new things
          * here
-         * 
+         *
          * that's why we are going to use
          * Strategy Design Pattern
          */
@@ -100,8 +105,8 @@ public class PaymentServiceImpl implements PaymentService {
         paymentTransitionService.apply(payment, PaymentEvent.AUTHORIZE_ATTEMPT);
 
         PaymentResult result = paymentAdapterGatewayRouter.initiate(paymentRequest); // it will choose the payment
-                                                                                     // adapter -> and adapter will
-                                                                                     // choose payment processor
+        // adapter -> and adapter will
+        // choose payment processor
         switch (result) {
             case PaymentResult.Pending(String registrationRef) -> payment.setProcessorReference(registrationRef);
             case PaymentResult.Failure(String errorCode, String errorDescription) -> {
@@ -117,8 +122,22 @@ public class PaymentServiceImpl implements PaymentService {
             default -> throw new IllegalStateException("Unexpected value: " + result);
         }
 
-        orderRepository.save(order);
-        return paymentMapper.toResponse(paymentRepository.save(payment));
+        payment = paymentRepository.save(payment);
+        order = orderRepository.save(order);
+        outboxEventPublisher.publish(EventAggregateType.PAYMENT, payment.getId(), "PAYMENT_CREATED",
+                Map.of(
+                        "orderId", order.getId(),
+                        "paymentId", payment.getId(),
+                        "merchantId", merchantId.toString(),
+                        "paymentStatus", payment.getPaymentStatus().name(),
+                        "amountUnits", order.getAmount().getAmountUnits(),
+                        "amountCurrency", order.getAmount().getCurrency(),
+                        "paymentMethod", payment.getPaymentMethod()
+                )
+        );
+
+
+        return paymentMapper.toResponse(payment);
     }
 
     @Override
@@ -156,15 +175,27 @@ public class PaymentServiceImpl implements PaymentService {
 
         }
 
-        // TODO send an outbox (kafka event)
+        payment = paymentRepository.save(payment);
 
-        return paymentMapper.toResponse(paymentRepository.save(payment));
+        outboxEventPublisher.publish(EventAggregateType.PAYMENT, payment.getId(), "PAYMENT_CREATED",
+                Map.of(
+                        "orderId", payment.getOrder().getId(),
+                        "paymentId", payment.getId(),
+                        "merchantId", merchantId.toString(),
+                        "paymentStatus", payment.getPaymentStatus().name(),
+                        "amountUnits", payment.getOrder().getAmount().getAmountUnits(),
+                        "amountCurrency", payment.getOrder().getAmount().getCurrency(),
+                        "paymentMethod", payment.getPaymentMethod()
+                )
+        );
+
+        return paymentMapper.toResponse(payment);
     }
 
     @Override
     @Transactional
     public void resolveAuthorization(UUID paymentId, Boolean approve, String bankRef, String simBankErrorCode,
-            String simulatedBankDecline) {
+                                     String simulatedBankDecline) {
 
         // Payment payment = paymentRepository.findById(paymentId).orElseThrow(() ->
         // new ResourceNotFoundException("Payment Not found: " + paymentId)
@@ -206,9 +237,19 @@ public class PaymentServiceImpl implements PaymentService {
             payment.setErrorDescription(simulatedBankDecline);
         }
 
-        paymentRepository.save(payment);
-        orderRepository.save(order);
-
-        // TODO outbox kafka event
+        payment = paymentRepository.save(payment);
+        order = orderRepository.save(order);
+        
+        outboxEventPublisher.publish(EventAggregateType.PAYMENT, payment.getId(), "PAYMENT_CREATED",
+                Map.of(
+                        "orderId", payment.getOrder().getId().toString(),
+                        "paymentId", payment.getId().toString(),
+                        "merchantId", payment.getMerchantId().toString(),
+                        "paymentStatus", payment.getPaymentStatus().name(),
+                        "amountUnits", order.getAmount().getAmountUnits(),
+                        "amountCurrency", order.getAmount().getCurrency(),
+                        "paymentMethod", payment.getPaymentMethod()
+                )
+        );
     }
 }
