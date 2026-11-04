@@ -9,5 +9,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface WebhookEventRepository extends JpaRepository<WebhookEvent, UUID> {
-    List<WebhookEvent> findByStatusAndNextRetryAtBefore(WebhookEventStatus webhookEventStatus, LocalDateTime now);
+    List<WebhookEvent> findByWebhookEventStatusAndNextRetryAtBefore(WebhookEventStatus webhookEventStatus, LocalDateTime now);
 }

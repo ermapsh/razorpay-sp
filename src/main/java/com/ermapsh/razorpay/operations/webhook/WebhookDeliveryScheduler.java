@@ -42,7 +42,7 @@ public class WebhookDeliveryScheduler {
     public void reconcileFromDatabase(){
         LocalDateTime now = LocalDateTime.now();
         List<WebhookEvent> dues = eventRepository.
-                findByStatusAndNextRetryAtBefore(WebhookEventStatus.PENDING, now);
+                findByWebhookEventStatusAndNextRetryAtBefore(WebhookEventStatus.PENDING, now);
 
         for (WebhookEvent event: dues){
             retryQueue.enqueueIfAbsent(event.getId(), event.getNextRetryAt());

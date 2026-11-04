@@ -16,13 +16,11 @@ public class AesEncryptionConfig {
     @Value("${vault.master-key}")
     private String masterKey;
 
-
     @Bean
     public BytesEncryptor masterKeyEncryptor() {
         byte[] masterKeyBytes = Base64.getDecoder().decode(masterKey);
-        SecretKeySpec masterDecKey = new SecretKeySpec(masterKeyBytes, "AES");
-        return new AesBytesEncryptor(masterDecKey,
-                KeyGenerators.secureRandom(12),
+        SecretKeySpec masterDecKey = new SecretKeySpec(masterKeyBytes, "AES/GCM/NoPadding");
+        return new AesBytesEncryptor(masterDecKey, KeyGenerators.secureRandom(12),
                 AesBytesEncryptor.CipherAlgorithm.GCM);
     }
 }
