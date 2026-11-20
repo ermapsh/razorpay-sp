@@ -46,7 +46,7 @@ public class WebhookDeliveryScheduler {
     @Scheduled(fixedDelay = 1000)
     public void pollAndDeliver(){
         Set<UUID> dues = retryQueue.pollDue(batchSize);
-
+        log.info("WebhookDeliveryScheduler dues are: {}", dues.size());
         if(dues.isEmpty()) return;
 
         for (UUID webhookEventId: dues){

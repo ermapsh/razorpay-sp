@@ -5,6 +5,8 @@ import com.ermapsh.razorpay.payment.entity.OutboxEvent;
 import com.ermapsh.razorpay.payment.repository.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 import java.util.UUID;

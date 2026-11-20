@@ -1,6 +1,7 @@
 package com.ermapsh.razorpay.common.enums;
 
 public enum WebhookEventType {
+    PAYMENT_CREATED,
     PAYMENT_AUTHORIZED,
     PAYMENT_CAPTURED,
     PAYMENT_FAILED,
