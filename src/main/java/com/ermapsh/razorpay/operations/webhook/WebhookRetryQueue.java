@@ -34,8 +34,8 @@ public class WebhookRetryQueue {
                 rangeByScoreWithScores(key, 0, now, 0, limit);
         if (dues == null || dues.isEmpty()) return Set.of();
 
-        dues.forEach(tuple -> redisTemplate.opsForZSet().remove(key,
-                tuple.getValue()));
+        dues.forEach(tuple -> redisTemplate.opsForZSet().
+                remove(key, tuple.getValue()));
 
         return dues.stream().
                 map(tuple -> UUID.fromString(tuple.getValue())).

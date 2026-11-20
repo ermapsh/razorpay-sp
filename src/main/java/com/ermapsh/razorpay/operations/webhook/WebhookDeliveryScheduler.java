@@ -3,6 +3,8 @@ package com.ermapsh.razorpay.operations.webhook;
 import com.ermapsh.razorpay.common.enums.WebhookEventStatus;
 import com.ermapsh.razorpay.operations.entity.WebhookEvent;
 import com.ermapsh.razorpay.operations.repository.WebhookEventRepository;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +15,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Component
 @Slf4j
@@ -21,9 +25,22 @@ public class WebhookDeliveryScheduler {
 
     private final WebhookRetryQueue retryQueue;
     private final WebhookEventRepository eventRepository;
+    private final WebhookDeliveryExecutor deliveryExecutor;
+
+    private ExecutorService virtualThreadExecutor;
 
     @Value("${app.webhook.delivery.poll-size:100}")
     private int batchSize;
+
+    @PostConstruct
+    void init(){
+        virtualThreadExecutor = Executors.newVirtualThreadPerTaskExecutor();
+    }
+
+    @PreDestroy
+    void shutdown(){
+        virtualThreadExecutor.shutdown();
+    }
 
 //    Normal Scheduler
     @Scheduled(fixedDelay = 1000)
@@ -33,7 +50,9 @@ public class WebhookDeliveryScheduler {
         if(dues.isEmpty()) return;
 
         for (UUID webhookEventId: dues){
-//            executor.deliver(eventId) // due of executor to make the https call
+            virtualThreadExecutor.submit(()->{
+                deliveryExecutor.deliver(webhookEventId);
+            });
         }
     }
 

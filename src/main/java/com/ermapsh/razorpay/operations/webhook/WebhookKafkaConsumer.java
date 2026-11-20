@@ -10,9 +10,11 @@ import com.ermapsh.razorpay.operations.repository.WebhookEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.dao.DataAccessException;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.CannotCreateTransactionException;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
@@ -30,6 +32,7 @@ public class WebhookKafkaConsumer {
     private final ObjectMapper objectMapper;
     private final SignerUtil signerUtil;
     private final WebhookRetryQueue retryQueue;
+    private final WebhookDlqRecorder recorder;
 
     @KafkaListener(topics = {
             "${app.kafka.topics.payment:payment.events}",
@@ -84,9 +87,12 @@ public class WebhookKafkaConsumer {
             }
 
             ack.acknowledge();
-        } catch (Exception e) {
-            log.error("Webhook consumer failed to process the record, offset {}: ", record.offset());
-//        TODO : check exception of acknowledging
+        } catch (DataAccessException | CannotCreateTransactionException e) {
+            log.error("Webhook consumer failed due to DB Down to process the record, offset {}: ", record.offset());
+        } catch (Exception logicError) {
+            log.error("Webhook consumer failed while process {}", logicError.getMessage());
+            recorder.recordConsumerFailed(record, logicError.getMessage());
+            ack.acknowledge();
         }
     }
 }
