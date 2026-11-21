@@ -20,12 +20,13 @@ public class WebhookRetryQueue {
 
     private final RedisTemplate redisTemplate;
 
-    @Value("${app.webhook.delivery.redis-key")
+    @Value("${app.webhook.delivery.redis-key}")
     private String key;
 
     public void enqueue(UUID webhookEventId, LocalDateTime retryAt) {
         long time = retryAt.toInstant(ZoneOffset.UTC).toEpochMilli();
         redisTemplate.opsForZSet().add(key, webhookEventId.toString(), time);
+        log.info("Enqueued a webhook event: {}", webhookEventId);
     }
 
     public Set<UUID> pollDue(int limit) {
@@ -47,7 +48,6 @@ public class WebhookRetryQueue {
     }
 
     private static long getTime(LocalDateTime retryAt) {
-        long time = retryAt.toInstant(ZoneOffset.UTC).toEpochMilli();
-        return time;
+        return retryAt.toInstant(ZoneOffset.UTC).toEpochMilli();
     }
 }

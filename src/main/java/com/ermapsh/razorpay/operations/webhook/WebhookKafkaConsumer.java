@@ -84,6 +84,7 @@ public class WebhookKafkaConsumer {
                 webhookEvent = webhookEventRepository.save(webhookEvent);
 
                 retryQueue.enqueue(webhookEvent.getId(), webhookEvent.getNextRetryAt());
+                log.info("Created a webhook event with id: {}", webhookEvent.getId());
             }
 
             ack.acknowledge();

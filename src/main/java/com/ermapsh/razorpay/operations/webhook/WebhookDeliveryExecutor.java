@@ -75,6 +75,7 @@ public class WebhookDeliveryExecutor {
                 event.setWebhookEventStatus(WebhookEventStatus.SUCCESS);
                 event.setDeliveredAt(LocalDateTime.now());
                 webhookEventRepository.save(event);
+                log.info("Successfully called the merchant for event webhook event: {}", webhookEventId);
                 return;
             }
 
@@ -83,6 +84,7 @@ public class WebhookDeliveryExecutor {
         } catch (RestClientException e) {
             event.setLastResponseBody(e.getMessage());
             handleAttemptFailed(event, e.getMessage());
+            log.error("Got RestClientException error", e);
         }
     }
 
@@ -99,6 +101,7 @@ public class WebhookDeliveryExecutor {
         webhookEventRepository.save(event);
 
         webhookRetryQueue.enqueue(event.getId(), event.getNextRetryAt());
+        log.error("Handling attempt failed for webhook event {} with attempts: {}", event.getId(), event.getAttempts());
     }
 
 }

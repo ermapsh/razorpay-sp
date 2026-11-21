@@ -29,14 +29,13 @@ public class WebhookDlqRecorder {
         webhookEventRepository.save(event);
 
         DLQEvent dlqEvent = DLQEvent.builder()
+                .merchantId(event.getMerchantId())
                 .webhookEvent(event)
                 .finalError(finalError)
                 .payload(event.getPayload())
                 .build();
 
         dlqEventRepository.save(dlqEvent);
-
-
     }
 
     public void recordConsumerFailed(ConsumerRecord<String, Map<String, Object>> record, String error) {
